@@ -1,0 +1,6 @@
+{
+  "name": "Aegis AI - Spacecraft Component Diagnostics",
+  "description": "Real-time AI diagnostic monitoring system for spacecraft electrical networks, cable connections, thermal telemetry, current leakages, and short-circuit risk prevention with an interactive admin fault injection simulator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
