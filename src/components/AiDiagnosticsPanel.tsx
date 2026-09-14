@@ -1,7 +1,6 @@
 import React from 'react';
 import { AiDiagnosisResult } from '../types';
 import {
-  Sparkles,
   CheckCircle2,
   AlertOctagon,
   FileText,
@@ -45,13 +44,10 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-slate-800 gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 rounded-xl text-cyan-400 shadow-md shadow-cyan-950/50">
-            <Sparkles className="w-5 h-5 animate-pulse" />
-          </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-slate-100 font-['Chakra_Petch'] tracking-wide">
-                AEGIS AI COMPONENT & ELECTRICAL DIAGNOSTIC ENGINE
+                AURA COMPONENT & ELECTRICAL DIAGNOSTIC ENGINE
               </h2>
               <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
                 {diagnosis.source === 'gemini-3.8-flash' ? 'GEMINI 3.8-FLASH LIVE' : 'EMBEDDED AEROSPACE CORE'}

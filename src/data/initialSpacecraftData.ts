@@ -3,7 +3,7 @@ import { SpacecraftComponent, CableConnection, FaultPreset } from '../types';
 export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   {
     id: 'PWR-01',
-    name: 'Main Fission Reactor Core',
+    name: 'Chamber A',
     category: 'POWER',
     voltage: 480,
     nominalCurrent: 120,
@@ -22,7 +22,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: true,
     gridX: 180,
     gridY: 300,
-    description: 'Primary magnetic confinement fission reactor generating 480V DC main bus power.',
+    description: 'Chamber A: Primary magnetic confinement fission reactor generating 480V DC main bus power.',
     specDetails: {
       operatingPowerKw: 58.7,
       insulationRatingKv: 5.0,
@@ -32,7 +32,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'ION-02',
-    name: 'Ion Propulsion Engine Thruster',
+    name: 'Chamber B',
     category: 'PROPULSION',
     voltage: 480,
     nominalCurrent: 145,
@@ -51,7 +51,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: true,
     gridX: 420,
     gridY: 140,
-    description: 'Xenon Hall-effect primary propulsion array requiring sustained high-current feed.',
+    description: 'Chamber B: Xenon Hall-effect primary propulsion thruster array requiring sustained high-current feed.',
     specDetails: {
       operatingPowerKw: 71.4,
       insulationRatingKv: 3.2,
@@ -61,7 +61,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'CRY-03',
-    name: 'Cryogenic Coolant Distribution Pump',
+    name: 'Chamber C',
     category: 'COOLING',
     voltage: 480,
     nominalCurrent: 45,
@@ -80,7 +80,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: true,
     gridX: 420,
     gridY: 460,
-    description: 'Circulates liquid helium coolant through reactor core and plasma thruster electromagnets.',
+    description: 'Chamber C: Cryogenic coolant distribution pump circulating liquid helium coolant through active loops.',
     specDetails: {
       operatingPowerKw: 21.2,
       insulationRatingKv: 2.5,
@@ -90,7 +90,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'LSS-04',
-    name: 'ECLSS Life Support Oxygen Generator',
+    name: 'Chamber D',
     category: 'LIFE_SUPPORT',
     voltage: 240,
     nominalCurrent: 32,
@@ -109,7 +109,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: true,
     gridX: 680,
     gridY: 150,
-    description: 'Atmospheric scrubbers, electrolysis oxygen generators, and crew habitat pressurization.',
+    description: 'Chamber D: ECLSS atmospheric scrubbers, electrolysis oxygen generators, and cabin pressurization.',
     specDetails: {
       operatingPowerKw: 7.6,
       insulationRatingKv: 1.8,
@@ -119,7 +119,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'NAV-05',
-    name: 'Avionics & Guidance Flight Computer',
+    name: 'Chamber E',
     category: 'AVIONICS',
     voltage: 28,
     nominalCurrent: 18,
@@ -138,7 +138,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: true,
     gridX: 680,
     gridY: 300,
-    description: 'Triple-redundant orbital navigation computer, star trackers, and attitude thruster logic.',
+    description: 'Chamber E: Triple-redundant orbital avionics flight computer, star trackers, and guidance logic.',
     specDetails: {
       operatingPowerKw: 0.5,
       insulationRatingKv: 1.2,
@@ -148,7 +148,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'SOL-06',
-    name: 'Solar Array & Battery Storage Bus',
+    name: 'Chamber F',
     category: 'POWER',
     voltage: 480,
     nominalCurrent: 50,
@@ -167,7 +167,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: false,
     gridX: 180,
     gridY: 140,
-    description: 'Deployable photovoltaic solar wings and dual solid-state energy storage banks.',
+    description: 'Chamber F: Photovoltaic solar array wings and dual solid-state energy storage bus.',
     specDetails: {
       operatingPowerKw: 23.0,
       insulationRatingKv: 4.0,
@@ -177,7 +177,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'SHD-07',
-    name: 'Deflector Shield & Hull Field Coil',
+    name: 'Chamber G',
     category: 'DEFENSE',
     voltage: 480,
     nominalCurrent: 85,
@@ -196,7 +196,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: false,
     gridX: 420,
     gridY: 300,
-    description: 'High-frequency magnetosphere shielding against micro-meteorites and solar radiation flares.',
+    description: 'Chamber G: Deflector shield and high-frequency hull field coil protecting against radiation flares.',
     specDetails: {
       operatingPowerKw: 40.3,
       insulationRatingKv: 4.5,
@@ -206,7 +206,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   },
   {
     id: 'COM-08',
-    name: 'Deep Space High-Gain Comm Array',
+    name: 'Chamber H',
     category: 'COMM',
     voltage: 120,
     nominalCurrent: 22,
@@ -225,7 +225,7 @@ export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
     isCritical: false,
     gridX: 680,
     gridY: 460,
-    description: 'Phased-array optical laser transceiver and microwave sub-space communications dish.',
+    description: 'Chamber H: Deep space high-gain phased-array communications array and sub-space transceiver.',
     specDetails: {
       operatingPowerKw: 2.6,
       insulationRatingKv: 1.5,
@@ -405,9 +405,9 @@ export function evaluateComponent(c: SpacecraftComponent): SpacecraftComponent {
 export const FAULT_PRESETS: FaultPreset[] = [
   {
     id: 'cryo-disconnect',
-    title: 'Cryo Pump Cable Disconnect',
+    title: 'Chamber C Cable Disconnect',
     category: 'CABLE & OPEN CIRCUIT',
-    summary: 'Unplugs cable CB-03 from Cryogenic Coolant Pump. Induces zero current flow, pump shutdown, and thermal cascade in Reactor Core.',
+    summary: 'Unplugs cable CB-03 from Chamber C (Cryo Pump). Induces zero current flow, pump shutdown, and thermal cascade in Chamber A.',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -422,9 +422,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'ion-leakage-short',
-    title: 'Ion Thruster Current Leakage & Arc Hazard',
+    title: 'Chamber B Current Leakage & Arc Hazard',
     category: 'GROUND FAULT & SHORT CIRCUIT',
-    summary: 'Degrades dielectric insulation on Cable CB-02. Injects 115mA hull ground fault leakage and spikes short circuit hazard to 86%.',
+    summary: 'Degrades dielectric insulation on Cable CB-02. Injects 115mA hull ground fault leakage into Chamber B and spikes short circuit hazard to 86%.',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -443,9 +443,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'reactor-overcurrent-surge',
-    title: 'Reactor Bus Overcurrent Surge',
+    title: 'Chamber A Bus Overcurrent Surge',
     category: 'CURRENT OVERFLOW',
-    summary: 'Triggers power regulator failure. Main reactor current spikes to 235A (exceeding 180A limit), heating bus bars to 112°C.',
+    summary: 'Triggers power regulator failure. Chamber A main reactor current spikes to 235A (exceeding 180A limit), heating bus bars to 112°C.',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -463,9 +463,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'eclss-power-loss',
-    title: 'ECLSS Life Support Power Failure',
+    title: 'Chamber D Power Failure',
     category: 'POWER FAILURE',
-    summary: 'Disconnects Cable CB-04 feeding Oxygen Generator. Current drops to 0.0A, triggering crew cabin emergency life-safety alert.',
+    summary: 'Disconnects Cable CB-04 feeding Chamber D. Current drops to 0.0A, triggering emergency life-safety alert.',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -482,9 +482,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'shield-thermal-overload',
-    title: 'Deflector Shield Coil Thermal Overload',
+    title: 'Chamber G Thermal Overload',
     category: 'TEMPERATURE & COIL STRESS',
-    summary: 'Deflector Shield coils overheat to 115°C under sustained pulse absorption with 48mA chassis leakage.',
+    summary: 'Chamber G coils overheat to 115°C under sustained pulse absorption with 48mA chassis leakage.',
     severity: 'WARNING',
     apply: (components) =>
       components.map((c) => {

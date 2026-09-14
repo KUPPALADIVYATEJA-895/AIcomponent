@@ -41,7 +41,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
     {
       id: 'welcome',
       sender: 'ai',
-      text: '### 🛡️ Aegis Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft machinery modules.\n\nSelect an inquiry from the **Recommended Inquiries** below or tap any component to diagnose its status.',
+      text: '### 🛡️ AURA Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft chambers (Chamber A through Chamber H).\n\nSelect an inquiry from the **Recommended Inquiries** below or tap any chamber to diagnose its status.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -64,7 +64,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
       {
         id: `welcome-${Date.now()}`,
         sender: 'ai',
-        text: '### 🛡️ Aegis Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft machinery modules.\n\nSelect an inquiry from the **Recommended Inquiries** below or tap any component to diagnose its status.',
+        text: '### 🛡️ AURA Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft chambers (Chamber A through Chamber H).\n\nSelect an inquiry from the **Recommended Inquiries** below or tap any chamber to diagnose its status.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
@@ -191,14 +191,14 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-100 font-['Chakra_Petch'] tracking-wide">
-                AEGIS DIAGNOSTIC AI
+                AURA DIAGNOSTIC AI
               </h3>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 text-emerald-400 border border-emerald-800/80">
                 ACTIVE TELEMETRY
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Orbital telemetry engineering assistant & fault analysis console
+              Orbital telemetry engineering assistant & chamber fault analysis console
             </p>
           </div>
         </div>
@@ -338,7 +338,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                         />
                       </div>
                       <div className="text-[9px] truncate text-slate-400 leading-tight mt-0.5">
-                        {c.name.split(' ')[0]}
+                        {c.name}
                       </div>
                     </button>
                   );

@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div>
             <h1 className="text-base sm:text-lg font-bold text-slate-100 tracking-wider font-['Chakra_Petch']">
-              AEGIS AI <span className="text-cyan-400 font-normal">//</span> ORBITAL COMPONENT DIAGNOSTICS
+              AURA <span className="text-cyan-400 font-normal">//</span> ORBITAL COMPONENT DIAGNOSTICS
             </h1>
           </div>
         </div>

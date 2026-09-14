@@ -47,10 +47,10 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-100 font-['Chakra_Petch'] tracking-wide">
-              SPACECRAFT ELECTRICAL GRID TOPOLOGY & CABLE NETWORK
+              CHAMBER MONITORING SECTION & CABLE NETWORK
             </h3>
             <p className="text-[11px] text-slate-400">
-              Interactive node graph: Click any machinery to inspect or toggle its cable umbilical connection.
+              Interactive node graph: Click any chamber to inspect or toggle its cable umbilical connection.
             </p>
           </div>
         </div>
@@ -233,7 +233,7 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
               <text x="25" y="48" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">GRID: 1000x560</text>
               {/* Top-Right */}
               <path d="M 980 35 L 980 20 L 965 20" fill="none" />
-              <text x="910" y="48" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">SYS-ID: AEGIS-88</text>
+              <text x="910" y="48" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">SYS-ID: AURA-88</text>
               {/* Bottom-Left */}
               <path d="M 20 525 L 20 540 L 35 540" fill="none" />
               <text x="25" y="533" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">480V TELEMETRY</text>

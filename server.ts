@@ -318,7 +318,7 @@ app.post("/api/ai/chat", async (req, res) => {
     const { message, systemState } = req.body;
     const components: any[] = systemState?.components || [];
 
-    const prompt = `You are the Aegis AI, the spacecraft's electrical systems diagnostic and flight engineer.
+    const prompt = `You are AURA, the spacecraft's electrical systems diagnostic and flight engineer.
 Current live spacecraft electrical telemetry:
 ${JSON.stringify(systemState, null, 2)}
 
@@ -326,26 +326,26 @@ User question: "${message}"
 
 Follow these diagnostic evaluation rules based on the user's intent:
 1. "Which component consumes more power / current":
-   - Identify the highest power-consuming machinery based on active current draw (Amperes) and percentage of total bus load.
+   - Identify the highest power-consuming chamber or machinery based on active current draw (Amperes) and percentage of total bus load.
    - Note whether its draw is normal or an overcurrent hazard.
-   - Also mention any component with 0A / disconnected power.
+   - Also mention any component/chamber with 0A / disconnected power.
 2. "Which component has current leakage":
    - Inspect chassis ground leakage (leakageCurrent in mA).
-   - If any component has leakage > 20 mA (or high risk), identify the component, its exact mA, hazard level, and isolation/grounding solution.
-   - If NO component has elevated leakage (all <= 20 mA), explicitly state: "No abnormal current leakage detected. All component insulation barriers are intact and chassis ground return is clean."
+   - If any chamber has leakage > 20 mA (or high risk), identify the chamber, its exact mA, hazard level, and isolation/grounding solution.
+   - If NO chamber has elevated leakage (all <= 20 mA), explicitly state: "No abnormal current leakage detected. All chamber insulation barriers are intact and chassis ground return is clean."
 3. "Which component has high temperature":
-   - Inspect component operating temperatures (°C).
-   - If any component exceeds nominal/safe thermal thresholds (>75°C or status WARNING/CRITICAL), detail the component, exact temperature, thermal runaway risk, and cooling remediation.
-   - If NO component is overheating, state clearly: "All spacecraft machinery components are operating in normal thermal equilibrium."
+   - Inspect chamber operating temperatures (°C).
+   - If any chamber exceeds nominal/safe thermal thresholds (>75°C or status WARNING/CRITICAL), detail the chamber, exact temperature, thermal runaway risk, and cooling remediation.
+   - If NO chamber is overheating, state clearly: "All spacecraft chambers are operating in normal thermal equilibrium."
 4. "Faults and risks list" or "List of faults":
    - If there ARE active faults (cables unplugged, current overflow, high temperature, chassis leakage > 20mA, short circuit risk >= 50%):
-     Provide a comprehensive, itemized report listing each fault found, which component it belongs to, exact metric readings, and the step-by-step engineering solution.
-   - If there are NO faults in the system (all components nominal):
-     Explicitly state: "No faults detected in the system. All components are working good!" and provide a clean confirmation checklist.
-5. Specific component inquiry (e.g. asking about a particular component like Reactor, Ion Thruster, Coolant Pump, Life Support, Avionics, etc.):
-   - Inspect that exact component in the telemetry.
+     Provide a comprehensive, itemized report listing each fault found, which chamber it belongs to, exact metric readings, and the step-by-step engineering solution.
+   - If there are NO faults in the system (all chambers nominal):
+     Explicitly state: "No faults detected in the system. All chambers are working good!" and provide a clean confirmation checklist.
+5. Specific chamber inquiry (e.g. asking about a particular chamber like Chamber A, Chamber B, Chamber C, etc.):
+   - Inspect that exact chamber in the telemetry.
    - If it has ANY fault (cable disconnected/0A, overcurrent, elevated temperature, ground leakage, short-circuit risk): explain the exact fault and give the solution to solve it.
-   - If it has NO fault: explicitly respond with: "No fault detected in [Component Name]. All parameters (Current Draw, Temperature, Cable Connection, and Ground Isolation) are operating within nominal specifications."
+   - If it has NO fault: explicitly respond with: "No fault detected in [Chamber Name]. All parameters (Current Draw, Temperature, Cable Connection, and Ground Isolation) are operating within nominal specifications."
 
 Format your response clearly using markdown with bold headings and bullet points. Maintain professional aerospace engineering tone.`;
 
@@ -547,7 +547,7 @@ app.post("/api/ai/report", async (req, res) => {
   try {
     const { systemState, telemetryHistory } = req.body;
 
-    const prompt = `Generate a formal Aerospace Electrical & Life Safety Diagnostic Incident Report for spacecraft NCC-74656 Aegis.
+    const prompt = `Generate a formal Aerospace Electrical & Life Safety Diagnostic Incident Report for spacecraft NCC-74656 AURA.
 System state data:
 ${JSON.stringify(systemState, null, 2)}
 
@@ -570,15 +570,15 @@ Structure the report with:
     const now = new Date();
     const timestamp = now.toUTCString();
     const reportText = `# SPACECRAFT ELECTRICAL & COMPONENT DIAGNOSTIC REPORT
-**VESSEL:** USSC AEGIS (HULL REGISTRY SC-8821)
+**VESSEL:** USSC AURA (HULL REGISTRY SC-8821)
 **MISSION TIME:** ${timestamp}
-**DIAGNOSTIC ENGINE:** AEGIS TELEMETRY AI v4.8 [EMBEDDED AEROSPACE FIRMWARE]
+**DIAGNOSTIC ENGINE:** AURA TELEMETRY AI v4.8 [EMBEDDED AEROSPACE FIRMWARE]
 **STATUS:** ${systemState?.issues?.length > 0 ? "ATTENTION REQUIRED - ACTIVE FAULTS LOGGED" : "NOMINAL - ALL SYSTEMS CLEARED FOR ORBIT"}
 
 ---
 
 ## 1. EXECUTIVE SUMMARY
-Continuous telemetry polling scanned 8 primary machinery nodes and 8 high-gauge interconnect umbilicals. 
+Continuous telemetry polling scanned 8 primary chambers (Chamber A through Chamber H) and 8 high-gauge interconnect umbilicals. 
 - Total Active Power Bus Draw: ${systemState?.totalCurrent || 384} Amperes @ 480V DC
 - Grid Health Index: ${systemState?.gridHealthScore || 92} / 100
 - Active Anomaly Vectors: ${systemState?.issues?.length || 0} detected

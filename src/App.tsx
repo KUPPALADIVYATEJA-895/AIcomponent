@@ -450,7 +450,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-6 text-center text-xs font-mono text-slate-500">
-        AEGIS AI SPACECRAFT ELECTRICAL TELEMETRY SYSTEM • ORBITAL DIAGNOSTICS & FAULT PREVENTION • NASA/ESA AEROSPACE TOLERANCES
+        AURA SPACECRAFT ELECTRICAL TELEMETRY SYSTEM • ORBITAL DIAGNOSTICS & FAULT PREVENTION • NASA/ESA AEROSPACE TOLERANCES
       </footer>
 
       {/* Modals & Slide-out Drawers */}

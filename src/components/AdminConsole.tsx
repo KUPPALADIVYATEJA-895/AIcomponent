@@ -245,7 +245,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 />
                 <span>{c.id}</span>
                 <span className="text-slate-400 text-[11px] hidden sm:inline">
-                  ({c.name.split(' ')[0]})
+                  ({c.name})
                 </span>
                 {isDisconnected && (
                   <span className="px-1 text-[9px] bg-rose-950 text-rose-300 border border-rose-800 rounded">
