@@ -33,32 +33,30 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
 
   // Calculate total grid current
   const totalBusCurrent = components.reduce((acc, c) => acc + (c.cableConnected ? c.currentDraw : 0), 0);
+  const selectedComp = components.find(c => c.id === selectedComponentId);
 
   return (
     <div
       id="spacecraft-circuit-schematic-graph"
-      className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-xl relative flex flex-col"
+      className="bg-[#131926] border border-[#232f42] rounded-xl p-4 shadow-md relative flex flex-col"
     >
-      {/* HUD Header */}
-      <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-800">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#232f42]">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/20">
+          <div className="p-1.5 bg-blue-600/15 text-blue-400 rounded-lg border border-blue-500/30">
             <Activity className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-100 font-['Chakra_Petch'] tracking-wide">
+            <h3 className="text-sm font-bold text-slate-100 tracking-tight">
               CHAMBER MONITORING SECTION & CABLE NETWORK
             </h3>
-            <p className="text-[11px] text-slate-400">
-              Interactive node graph: Click any chamber to inspect or toggle its cable umbilical connection.
-            </p>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="hidden lg:flex items-center gap-3 text-[11px] font-mono">
+        <div className="hidden lg:flex items-center gap-4 text-xs font-mono">
           <span className="flex items-center gap-1.5 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm shadow-emerald-500/50" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
             Nominal
           </span>
           <span className="flex items-center gap-1.5 text-slate-300">
@@ -66,205 +64,77 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
             Warning
           </span>
           <span className="flex items-center gap-1.5 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping inline-block" />
-            Critical / Fault
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" />
+            Fault
           </span>
-          <span className="flex items-center gap-1.5 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-400">
             <span className="w-2.5 h-2.5 rounded-full bg-slate-600 inline-block" />
-            Unplugged (0A)
+            Disconnected
           </span>
         </div>
       </div>
 
-      {/* SVG Canvas for Grid Topology with enhanced high-tech aerospace HUD */}
-      <div className="relative w-full aspect-[16/9] min-h-[420px] bg-[#030712] rounded-xl border border-slate-800/90 overflow-hidden select-none shadow-2xl">
-        {/* Ambient Cosmic Background Glows */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,rgba(14,165,233,0.12),rgba(15,23,42,0.6)_60%,#020617_100%)]" />
-        <div className="absolute top-1/4 left-1/5 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/5 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-
+      {/* SVG Canvas for Single-Line Electrical Schematic */}
+      <div className="relative w-full aspect-[16/9] min-h-[420px] bg-[#0c1017] rounded-lg border border-[#1f2937] overflow-hidden select-none">
         <svg
           viewBox="0 0 1000 560"
           className="relative w-full h-full"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            {/* Holographic Aerospace Grid Patterns */}
-            <pattern id="fine-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0ea5e9" strokeWidth="0.3" strokeOpacity="0.12" />
+            {/* Clean CAD Engineering Grid */}
+            <pattern id="cad-grid-fine" width="25" height="25" patternUnits="userSpaceOnUse">
+              <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1c2536" strokeWidth="0.5" strokeOpacity="0.4" />
             </pattern>
-            <pattern id="major-grid" width="100" height="100" patternUnits="userSpaceOnUse">
-              <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#38bdf8" strokeWidth="0.6" strokeOpacity="0.2" />
-              <circle cx="100" cy="100" r="1" fill="#38bdf8" fillOpacity="0.4" />
+            <pattern id="cad-grid-major" width="100" height="100" patternUnits="userSpaceOnUse">
+              <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#26344a" strokeWidth="0.8" strokeOpacity="0.5" />
             </pattern>
 
-            {/* Glowing Filters */}
-            <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="glow-danger" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="4.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="glow-gold" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-
-            {/* Gradients */}
-            <radialGradient id="bus-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
-              <stop offset="60%" stopColor="#0284c7" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="#0b1120" stopOpacity="0" />
-            </radialGradient>
-            <linearGradient id="hull-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0f172a" stopOpacity="0.7" />
-              <stop offset="50%" stopColor="#090d16" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#020617" stopOpacity="0.8" />
-            </linearGradient>
-            <linearGradient id="node-glass" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#131b2e" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#090e1a" stopOpacity="0.98" />
+            {/* Subtle Gradient for Module Cards */}
+            <linearGradient id="card-bg-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#171f2d" />
+              <stop offset="100%" stopColor="#121824" />
             </linearGradient>
           </defs>
 
-          {/* BACKGROUND LAYER 1: Dual Aerospace Grid Matrix */}
-          <rect width="1000" height="560" fill="url(#fine-grid)" />
-          <rect width="1000" height="560" fill="url(#major-grid)" />
+          {/* BACKGROUND: CAD Grid */}
+          <rect width="1000" height="560" fill="url(#cad-grid-fine)" />
+          <rect width="1000" height="560" fill="url(#cad-grid-major)" />
 
-          {/* BACKGROUND LAYER 2: Concentric Tactical Radar Range Rings around Central Bus */}
-          <g transform={`translate(${busCenter.x}, ${busCenter.y})`} pointerEvents="none">
-            {/* Range Rings */}
-            <circle r="90" fill="none" stroke="#0ea5e9" strokeWidth="0.75" strokeOpacity="0.25" strokeDasharray="4 6" />
-            <circle r="170" fill="none" stroke="#0ea5e9" strokeWidth="0.75" strokeOpacity="0.2" strokeDasharray="6 8" />
-            <circle r="255" fill="none" stroke="#0ea5e9" strokeWidth="0.75" strokeOpacity="0.15" strokeDasharray="8 10" />
-            <circle r="340" fill="none" stroke="#0ea5e9" strokeWidth="0.5" strokeOpacity="0.1" />
+          {/* Clean Engineering Boundary Frame */}
+          <rect
+            x="20"
+            y="20"
+            width="960"
+            height="520"
+            fill="none"
+            stroke="#202a3a"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+          />
+          <text x="32" y="38" fill="#475569" fontSize="9" fontFamily="monospace" fontWeight="600">
+            SCHEMATIC: DC DISTRIBUTION BUS // 480V SYSTEM
+          </text>
+          <text x="840" y="38" fill="#475569" fontSize="9" fontFamily="monospace" fontWeight="600">
+            8-CHANNEL NETWORK
+          </text>
 
-            {/* Radar Crosshairs */}
-            <line x1="-360" y1="0" x2="360" y2="0" stroke="#0ea5e9" strokeWidth="0.5" strokeOpacity="0.2" strokeDasharray="3 6" />
-            <line x1="0" y1="-250" x2="0" y2="250" stroke="#0ea5e9" strokeWidth="0.5" strokeOpacity="0.2" strokeDasharray="3 6" />
-
-            {/* Radial Degree Markers */}
-            <text x="96" y="-6" fill="#38bdf8" fillOpacity="0.4" fontSize="8" fontFamily="monospace">100 kVA</text>
-            <text x="176" y="-6" fill="#38bdf8" fillOpacity="0.35" fontSize="8" fontFamily="monospace">250 kVA</text>
-            <text x="261" y="-6" fill="#38bdf8" fillOpacity="0.3" fontSize="8" fontFamily="monospace">500 kVA</text>
-
-            {/* Subtle Rotating Tactical Compass Ring */}
-            <circle
-              r="220"
-              fill="none"
-              stroke="#38bdf8"
-              strokeWidth="0.75"
-              strokeOpacity="0.15"
-              strokeDasharray="2 12"
-              className="animate-[spin_90s_linear_infinite]"
-            />
-          </g>
-
-          {/* BACKGROUND LAYER 3: Detailed Aerospace Hull Architecture & Section Compartments */}
-          <g pointerEvents="none">
-            {/* Outer Armor Bulkhead Fill */}
-            <path
-              d="M 110 280 L 180 55 L 770 55 L 920 280 L 770 505 L 180 505 Z"
-              fill="url(#hull-grad)"
-              stroke="#0ea5e9"
-              strokeWidth="1.8"
-              strokeOpacity="0.4"
-            />
-
-            {/* Secondary Inner Armor Lining */}
-            <path
-              d="M 125 280 L 190 75 L 755 75 L 895 280 L 755 485 L 190 485 Z"
-              fill="none"
-              stroke="#38bdf8"
-              strokeWidth="0.75"
-              strokeOpacity="0.2"
-              strokeDasharray="10 5"
-            />
-
-            {/* Compartment Bulkhead Ribs */}
-            <line x1="250" y1="65" x2="250" y2="495" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="420" y1="65" x2="420" y2="495" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="580" y1="65" x2="580" y2="495" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="740" y1="65" x2="740" y2="495" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="4 4" />
-
-            {/* Compartment Technical Labels */}
-            <text x="140" y="475" fill="#475569" fontSize="8.5" fontFamily="monospace" fontWeight="bold">
-              SEC-01 // PROPULSION & THERMAL
-            </text>
-            <text x="265" y="475" fill="#475569" fontSize="8.5" fontFamily="monospace" fontWeight="bold">
-              SEC-02 // NUCLEAR POWER CORE
-            </text>
-            <text x="435" y="475" fill="#475569" fontSize="8.5" fontFamily="monospace" fontWeight="bold">
-              SEC-03 // MAIN DISTRIBUTION
-            </text>
-            <text x="595" y="475" fill="#475569" fontSize="8.5" fontFamily="monospace" fontWeight="bold">
-              SEC-04 // CREW HABITAT & ECLSS
-            </text>
-            <text x="755" y="475" fill="#475569" fontSize="8.5" fontFamily="monospace" fontWeight="bold">
-              SEC-05 // SENSOR RADOME
-            </text>
-
-            {/* Thruster Exhaust Bells at AFT (Left) */}
-            <path d="M 110 230 L 70 215 L 70 260 L 110 250 Z" fill="#0f172a" stroke="#0ea5e9" strokeWidth="1" strokeOpacity="0.4" />
-            <path d="M 110 310 L 70 300 L 70 345 L 110 330 Z" fill="#0f172a" stroke="#0ea5e9" strokeWidth="1" strokeOpacity="0.4" />
-            <text x="35" y="285" fill="#0ea5e9" fillOpacity="0.5" fontSize="8" fontFamily="monospace" transform="rotate(-90 35 285)">
-              EXHAUST
-            </text>
-
-            {/* Forward Sensor Array Pitot at Nose (Right) */}
-            <line x1="920" y1="280" x2="965" y2="280" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.5" />
-            <circle cx="965" cy="280" r="3" fill="#38bdf8" fillOpacity="0.7" />
-
-            {/* Tactical HUD Corner Crosshairs */}
-            <g stroke="#38bdf8" strokeWidth="1" strokeOpacity="0.6">
-              {/* Top-Left */}
-              <path d="M 20 35 L 20 20 L 35 20" fill="none" />
-              <text x="25" y="48" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">GRID: 1000x560</text>
-              {/* Top-Right */}
-              <path d="M 980 35 L 980 20 L 965 20" fill="none" />
-              <text x="910" y="48" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">SYS-ID: AURA-88</text>
-              {/* Bottom-Left */}
-              <path d="M 20 525 L 20 540 L 35 540" fill="none" />
-              <text x="25" y="533" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">480V TELEMETRY</text>
-              {/* Bottom-Right */}
-              <path d="M 980 525 L 980 540 L 965 540" fill="none" />
-              <text x="895" y="533" fill="#38bdf8" fillOpacity="0.5" fontSize="8" fontFamily="monospace">STATUS: ACTIVE SCAN</text>
-            </g>
-          </g>
-
-          {/* CABLE CONNECTIONS LAYER (Bus to Components) */}
+          {/* CABLE CONNECTIONS (Central Bus to Chambers) */}
           {components.map((comp) => {
             const isSelected = comp.id === selectedComponentId;
             const isHovered = comp.id === hoveredNode;
             const isConnected = comp.cableConnected;
             const isCritical = comp.status === 'CRITICAL';
             const isOvercurrent = comp.currentDraw > comp.maxCurrent;
-            const isLeakage = comp.leakageCurrent > 25;
 
-            // Wire color based on state
-            let wireStroke = '#0ea5e9'; // Cyan
-            let glowFilter = isSelected ? 'url(#glow-cyan)' : undefined;
-
+            // Wire color
+            let wireStroke = '#3b82f6'; // Clean Blue
             if (!isConnected) {
-              wireStroke = '#ef4444'; // Red disconnected
-              glowFilter = 'url(#glow-danger)';
+              wireStroke = '#64748b'; // Muted Gray/Slate for disconnected
             } else if (isCritical || isOvercurrent) {
-              wireStroke = '#f43f5e'; // Rose
-              glowFilter = 'url(#glow-danger)';
+              wireStroke = '#ef4444'; // Red for fault
             } else if (comp.status === 'WARNING') {
               wireStroke = '#f59e0b'; // Amber
-              glowFilter = 'url(#glow-gold)';
             }
 
             // Path from central bus to component
@@ -272,77 +142,78 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
 
             return (
               <g key={`cable-group-${comp.id}`}>
-                {/* Outer Glow Halo Path */}
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke={wireStroke}
-                  strokeWidth={isSelected || isHovered ? 8 : 4}
-                  strokeOpacity={isConnected ? (isSelected ? 0.35 : 0.15) : 0.1}
-                  filter={glowFilter}
-                />
+                {/* Highlight line on hover or selection */}
+                {(isSelected || isHovered) && (
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={wireStroke}
+                    strokeWidth={6}
+                    strokeOpacity={0.2}
+                  />
+                )}
 
-                {/* Core Conductor Cable Path */}
+                {/* Primary Conductor Cable */}
                 <path
                   d={pathD}
                   fill="none"
                   stroke={wireStroke}
-                  strokeWidth={isSelected || isHovered ? 3.5 : 2}
-                  strokeOpacity={isConnected ? (isSelected ? 0.95 : 0.75) : 0.35}
+                  strokeWidth={isSelected ? 2.5 : 1.75}
+                  strokeOpacity={isConnected ? 0.9 : 0.4}
                   strokeDasharray={isConnected ? 'none' : '5 4'}
                 />
 
-                {/* Animated Electron Energy Stream (Flowing when connected) */}
+                {/* Flow indicator dashes when connected and drawing current */}
                 {isConnected && comp.currentDraw > 0 && (
                   <path
                     d={pathD}
                     fill="none"
-                    stroke={isCritical ? '#f43f5e' : '#38bdf8'}
-                    strokeWidth={isSelected ? 2.5 : 1.75}
-                    strokeDasharray="6 20"
-                    className="animate-[dash_1.2s_linear_infinite]"
+                    stroke={isCritical ? '#fca5a5' : '#93c5fd'}
+                    strokeWidth={1.5}
+                    strokeDasharray="4 14"
+                    className="animate-[dash_2s_linear_infinite]"
                     style={{
                       strokeDashoffset: 100,
-                      animationDuration: `${Math.max(0.4, 2.2 - (comp.currentDraw / comp.maxCurrent) * 1.8)}s`,
+                      animationDuration: `${Math.max(0.8, 2.5 - (comp.currentDraw / comp.maxCurrent) * 1.5)}s`,
                     }}
                   />
                 )}
 
-                {/* Severed / Disconnected Terminal Indicator */}
+                {/* Disconnected Open Switch Indicator */}
                 {!isConnected && (
                   <g
-                    transform={`translate(${(busCenter.x * 0.45 + comp.gridX * 0.55)}, ${(busCenter.y * 0.45 + comp.gridY * 0.55)})`}
+                    transform={`translate(${(busCenter.x * 0.48 + comp.gridX * 0.52)}, ${(busCenter.y * 0.48 + comp.gridY * 0.52)})`}
                   >
-                    <circle r="12" fill="#450a0a" stroke="#ef4444" strokeWidth="1.5" className="animate-pulse" />
-                    <line x1="-5" y1="-5" x2="5" y2="5" stroke="#fca5a5" strokeWidth="1.5" />
-                    <line x1="5" y1="-5" x2="-5" y2="5" stroke="#fca5a5" strokeWidth="1.5" />
+                    <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#1e1515" stroke="#ef4444" strokeWidth="1.2" />
+                    <line x1="-5" y1="-5" x2="5" y2="5" stroke="#f87171" strokeWidth="1.5" />
+                    <line x1="5" y1="-5" x2="-5" y2="5" stroke="#f87171" strokeWidth="1.5" />
                   </g>
                 )}
 
-                {/* Cable Midpoint Tag */}
+                {/* Cable Tag Label (Click to toggle) */}
                 <g
-                  transform={`translate(${(busCenter.x * 0.35 + comp.gridX * 0.65)}, ${(busCenter.y * 0.35 + comp.gridY * 0.65)})`}
+                  transform={`translate(${(busCenter.x * 0.32 + comp.gridX * 0.68)}, ${(busCenter.y * 0.32 + comp.gridY * 0.68)})`}
                   className="cursor-pointer transition-transform hover:scale-105"
                   onClick={() => onToggleCable(comp.id)}
                 >
                   <rect
-                    x="-34"
-                    y="-11"
-                    width="68"
-                    height="22"
-                    rx="5"
-                    fill="#030712"
-                    stroke={isConnected ? (isSelected ? '#0ea5e9' : '#334155') : '#ef4444'}
+                    x="-32"
+                    y="-10"
+                    width="64"
+                    height="20"
+                    rx="4"
+                    fill="#111722"
+                    stroke={isConnected ? (isSelected ? '#3b82f6' : '#2d3b50') : '#7f1d1d'}
                     strokeWidth={isSelected || !isConnected ? 1.5 : 1}
                   />
                   <text
                     x="0"
-                    y="4"
+                    y="3.5"
                     textAnchor="middle"
-                    fill={isConnected ? (isSelected ? '#38bdf8' : '#cbd5e1') : '#f87171'}
+                    fill={isConnected ? (isSelected ? '#60a5fa' : '#94a3b8') : '#f87171'}
                     fontSize="9"
                     fontFamily="monospace"
-                    fontWeight="bold"
+                    fontWeight="600"
                   >
                     {isConnected ? comp.cableId : 'UNPLUGGED'}
                   </text>
@@ -351,54 +222,49 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
             );
           })}
 
-          {/* CENTRAL POWER BUS NODE (Upgraded Distribution Core) */}
+          {/* CENTRAL POWER BUS NODE */}
           <g transform={`translate(${busCenter.x}, ${busCenter.y})`} className="cursor-pointer">
-            {/* Ambient Radial Core Glow */}
-            <circle r="72" fill="url(#bus-glow)" pointerEvents="none" />
-
-            {/* Outer Rotating Tachymeter Ring */}
-            <circle
-              r="54"
-              fill="none"
-              stroke="#0ea5e9"
-              strokeWidth="1"
-              strokeOpacity="0.4"
-              strokeDasharray="4 8"
-              className="animate-[spin_40s_linear_infinite]"
-            />
-
-            {/* Inner Rotating Energy Segments */}
-            <circle
-              r="46"
-              fill="none"
-              stroke="#38bdf8"
-              strokeWidth="1.5"
-              strokeDasharray="16 12"
-              className="animate-[spin_18s_linear_infinite_reverse]"
-            />
-
-            {/* Core Body Container */}
-            <circle
-              r="38"
-              fill="#080e1a"
-              stroke="#0284c7"
+            {/* Bus Enclosure */}
+            <rect
+              x="-65"
+              y="-40"
+              width="130"
+              height="80"
+              rx="8"
+              fill="#141c2a"
+              stroke="#2563eb"
               strokeWidth="2"
-              filter="url(#glow-cyan)"
             />
+            {/* Bus Header */}
+            <rect
+              x="-65"
+              y="-40"
+              width="130"
+              height="22"
+              rx="8"
+              fill="#1e2a3e"
+            />
+            <rect
+              x="-65"
+              y="-26"
+              width="130"
+              height="8"
+              fill="#1e2a3e"
+            />
+            <text x="0" y="-26" textAnchor="middle" fill="#93c5fd" fontSize="9" fontFamily="monospace" fontWeight="bold">
+              480V DC MAIN BUS
+            </text>
 
             {/* Digital Readout */}
-            <text x="0" y="-12" textAnchor="middle" fill="#38bdf8" fontSize="8" fontFamily="monospace" fontWeight="bold" letterSpacing="1">
-              480V DC BUS
-            </text>
-            <text x="0" y="5" textAnchor="middle" fill="#ffffff" fontSize="14" fontFamily="'Chakra Petch', monospace" fontWeight="bold">
+            <text x="0" y="3" textAnchor="middle" fill="#ffffff" fontSize="16" fontFamily="monospace" fontWeight="bold">
               {totalBusCurrent.toFixed(1)} A
             </text>
-            <text x="0" y="19" textAnchor="middle" fill="#94a3b8" fontSize="8" fontFamily="monospace">
-              TOTAL LOAD
+            <text x="0" y="24" textAnchor="middle" fill="#64748b" fontSize="8.5" fontFamily="monospace" fontWeight="600">
+              AGGREGATE LOAD
             </text>
           </g>
 
-          {/* COMPONENT MACHINERY NODES (Upgraded High-Tech Module Cards) */}
+          {/* CHAMBER MODULE CARDS */}
           {components.map((comp) => {
             const isSelected = comp.id === selectedComponentId;
             const isHovered = comp.id === hoveredNode;
@@ -409,18 +275,15 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
 
             // Status Colors
             let statusColor = '#10b981'; // emerald
-            let glowFilter = undefined;
             if (isDisconnected) {
               statusColor = '#64748b'; // slate
             } else if (isCritical || isOver) {
               statusColor = '#ef4444'; // red
-              glowFilter = 'url(#glow-danger)';
             } else if (isWarning) {
               statusColor = '#f59e0b'; // amber
-              glowFilter = 'url(#glow-gold)';
             }
 
-            // Category tag colors
+            // Category tag abbreviations
             const getCategoryShort = (cat: string) => {
               switch (cat) {
                 case 'POWER_GENERATION': return 'PWR';
@@ -440,118 +303,106 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
               <g
                 key={`comp-node-${comp.id}`}
                 transform={`translate(${comp.gridX}, ${comp.gridY})`}
-                className="cursor-pointer transition-all duration-200"
+                className="cursor-pointer transition-transform duration-150"
                 onClick={() => onSelectComponent(comp.id)}
                 onMouseEnter={() => setHoveredNode(comp.id)}
                 onMouseLeave={() => setHoveredNode(null)}
               >
-                {/* Active Selection / Hazard Ambient Rings */}
-                {(isSelected || isCritical) && (
-                  <circle
-                    r={isSelected ? '56' : '52'}
-                    fill="none"
-                    stroke={isCritical ? '#ef4444' : '#38bdf8'}
-                    strokeWidth={isSelected ? '2' : '1.5'}
-                    strokeDasharray={isCritical ? '4 3' : 'none'}
-                    className={isCritical ? 'animate-pulse' : ''}
-                  />
-                )}
-
                 {/* Node Box Body */}
                 <rect
                   x="-80"
                   y="-36"
                   width="160"
                   height="72"
-                  rx="10"
-                  fill="url(#node-glass)"
-                  stroke={isSelected ? '#38bdf8' : statusColor}
-                  strokeWidth={isSelected ? 2 : 1.25}
-                  filter={isSelected ? 'url(#glow-cyan)' : glowFilter}
+                  rx="6"
+                  fill="url(#card-bg-grad)"
+                  stroke={isSelected ? '#3b82f6' : isHovered ? '#475569' : '#232e40'}
+                  strokeWidth={isSelected ? 2 : 1}
                 />
 
                 {/* Left Status Accent Bar */}
                 <rect
-                  x="-75"
-                  y="-30"
-                  width="6"
-                  height="60"
-                  rx="3"
+                  x="-80"
+                  y="-36"
+                  width="4"
+                  height="72"
+                  rx="2"
                   fill={statusColor}
                 />
 
-                {/* Top Row: Category Pill & Component ID */}
+                {/* Top Row: Chamber Name & Category Badge */}
+                <text
+                  x="-68"
+                  y="-18"
+                  fill="#f8fafc"
+                  fontSize="12"
+                  fontFamily="sans-serif"
+                  fontWeight="bold"
+                >
+                  {comp.name}
+                </text>
+
                 <rect
-                  x="-63"
+                  x="28"
                   y="-28"
-                  width="36"
-                  height="12"
+                  width="44"
+                  height="14"
                   rx="3"
-                  fill="#030712"
-                  stroke={statusColor}
-                  strokeWidth="0.7"
+                  fill="#111722"
+                  stroke="#2d3b50"
+                  strokeWidth="1"
                 />
                 <text
-                  x="-45"
-                  y="-19"
+                  x="50"
+                  y="-18"
                   textAnchor="middle"
-                  fill={statusColor}
-                  fontSize="7.5"
+                  fill="#94a3b8"
+                  fontSize="8"
                   fontFamily="monospace"
-                  fontWeight="bold"
+                  fontWeight="600"
                 >
                   {getCategoryShort(comp.category)}
                 </text>
 
+                {/* Subtitle: Subsystem Bus */}
                 <text
-                  x="-22"
-                  y="-18"
-                  fill="#f8fafc"
-                  fontSize="11.5"
-                  fontFamily="'Chakra Petch', sans-serif"
-                  fontWeight="bold"
-                >
-                  {comp.id}
-                </text>
-
-                {/* Component Name */}
-                <text
-                  x="-63"
-                  y="-5"
-                  fill="#cbd5e1"
-                  fontSize="9.5"
+                  x="-68"
+                  y="-4"
+                  fill="#64748b"
+                  fontSize="8.5"
                   fontFamily="sans-serif"
-                  fontWeight="500"
                 >
-                  {comp.name.length > 17 ? comp.name.slice(0, 16) + '..' : comp.name}
+                  {comp.specDetails.subsystemBus.length > 24
+                    ? comp.specDetails.subsystemBus.slice(0, 23) + '..'
+                    : comp.specDetails.subsystemBus}
                 </text>
 
                 {/* Mini Load Progress Bar Track */}
                 <rect
-                  x="-63"
-                  y="6"
-                  width="132"
+                  x="-68"
+                  y="7"
+                  width="140"
                   height="3"
                   rx="1.5"
                   fill="#1e293b"
                 />
                 <rect
-                  x="-63"
-                  y="6"
-                  width={isDisconnected ? 0 : Math.max(4, (132 * loadPercent) / 100)}
+                  x="-68"
+                  y="7"
+                  width={isDisconnected ? 0 : Math.max(4, (140 * loadPercent) / 100)}
                   height="3"
                   rx="1.5"
-                  fill={isOver ? '#ef4444' : loadPercent > 75 ? '#f59e0b' : '#0ea5e9'}
+                  fill={isOver ? '#ef4444' : loadPercent > 75 ? '#f59e0b' : '#3b82f6'}
                 />
 
                 {/* Bottom Row: Current Flow & Temperature Readings */}
-                <g transform="translate(-63, 14)">
+                <g transform="translate(-68, 15)">
                   {/* Current Draw */}
                   <text
                     x="0"
-                    y="13"
-                    fill={isDisconnected ? '#64748b' : isOver ? '#f43f5e' : '#38bdf8'}
-                    fontSize="11.5"
+                    y="12"
+                    fill={isDisconnected ? '#64748b' : isOver ? '#ef4444' : '#f1f5f9'}
+                    fontSize="11"
                     fontFamily="monospace"
                     fontWeight="bold"
                   >
@@ -560,8 +411,8 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
 
                   {/* Temperature */}
                   <text
-                    x="75"
-                    y="13"
+                    x="82"
+                    y="12"
                     fill={comp.temperature >= comp.tempMax ? '#ef4444' : comp.temperature > comp.tempThreshold ? '#f59e0b' : '#10b981'}
                     fontSize="10"
                     fontFamily="monospace"
@@ -571,31 +422,22 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
                   </text>
                 </g>
 
-                {/* Disconnected / Fault Badge */}
+                {/* Disconnected Badge */}
                 {isDisconnected && (
-                  <g transform="translate(62, -26)">
-                    <circle r="9" fill="#7f1d1d" stroke="#ef4444" strokeWidth="1.2" />
-                    <text x="0" y="3" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold">
+                  <g transform="translate(64, -24)">
+                    <rect x="-14" y="-7" width="28" height="14" rx="3" fill="#3f1616" stroke="#ef4444" strokeWidth="0.8" />
+                    <text x="0" y="3.5" textAnchor="middle" fill="#fca5a5" fontSize="7.5" fontFamily="monospace" fontWeight="bold">
                       OFF
                     </text>
                   </g>
                 )}
 
+                {/* Fault Badge */}
                 {isCritical && !isDisconnected && (
-                  <g transform="translate(62, -26)">
-                    <circle r="9" fill="#7f1d1d" stroke="#ef4444" strokeWidth="1.2" className="animate-ping" />
-                    <circle r="9" fill="#ef4444" />
-                    <text x="0" y="3.5" textAnchor="middle" fill="#ffffff" fontSize="9.5" fontWeight="bold">
-                      !
-                    </text>
-                  </g>
-                )}
-
-                {comp.leakageCurrent > 25 && (
-                  <g transform="translate(60, 20)">
-                    <rect x="-17" y="-7" width="34" height="13" rx="3" fill="#3b0764" stroke="#c084fc" strokeWidth="0.8" />
-                    <text x="0" y="2.5" textAnchor="middle" fill="#e9d5ff" fontSize="7.5" fontFamily="monospace">
-                      {comp.leakageCurrent.toFixed(0)}mA
+                  <g transform="translate(64, -24)">
+                    <rect x="-14" y="-7" width="28" height="14" rx="3" fill="#450a0a" stroke="#ef4444" strokeWidth="0.8" />
+                    <text x="0" y="3.5" textAnchor="middle" fill="#fca5a5" fontSize="7.5" fontFamily="monospace" fontWeight="bold">
+                      FAULT
                     </text>
                   </g>
                 )}
@@ -604,19 +446,19 @@ export const CircuitSchematicGraph: React.FC<CircuitSchematicGraphProps> = ({
           })}
         </svg>
 
-        {/* Floating Quick Action Overlay */}
-        <div className="absolute bottom-3 left-3 bg-slate-900/80 border border-slate-700/60 rounded-lg px-3 py-1.5 backdrop-blur text-[11px] font-mono text-slate-300 flex items-center gap-3">
+        {/* Floating Bottom Quick Action Overlay */}
+        <div className="absolute bottom-3 left-3 bg-[#131926]/90 border border-[#232f42] rounded-lg px-3 py-1.5 text-xs font-mono text-slate-300 flex items-center gap-3 shadow-sm">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-cyan-400" />
-            Selected: <strong className="text-cyan-300">{selectedComponentId}</strong>
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            Selected: <strong className="text-white font-medium">{selectedComp?.name || selectedComponentId}</strong>
           </span>
-          <span className="text-slate-500">|</span>
+          <span className="text-[#324056]">|</span>
           <button
             onClick={() => onToggleCable(selectedComponentId)}
-            className="hover:text-cyan-300 transition-colors underline flex items-center gap-1"
+            className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-medium"
           >
-            <Unplug className="w-3 h-3 text-cyan-400" />
-            Toggle Cable
+            <Unplug className="w-3.5 h-3.5 text-slate-400" />
+            Toggle Connection
           </button>
         </div>
       </div>

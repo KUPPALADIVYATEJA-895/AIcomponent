@@ -405,9 +405,9 @@ export function evaluateComponent(c: SpacecraftComponent): SpacecraftComponent {
 export const FAULT_PRESETS: FaultPreset[] = [
   {
     id: 'cryo-disconnect',
-    title: 'Chamber C Cable Disconnect',
-    category: 'CABLE & OPEN CIRCUIT',
-    summary: 'Unplugs cable CB-03 from Chamber C (Cryo Pump). Induces zero current flow, pump shutdown, and thermal cascade in Chamber A.',
+    title: 'DISCONNECT CABLE',
+    category: 'FAULT',
+    summary: 'DISCONNECT CABLE',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -422,9 +422,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'ion-leakage-short',
-    title: 'Chamber B Current Leakage & Arc Hazard',
-    category: 'GROUND FAULT & SHORT CIRCUIT',
-    summary: 'Degrades dielectric insulation on Cable CB-02. Injects 115mA hull ground fault leakage into Chamber B and spikes short circuit hazard to 86%.',
+    title: 'SHORT CIRCUIT',
+    category: 'FAULT',
+    summary: 'SHORT CIRCUIT',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -443,9 +443,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'reactor-overcurrent-surge',
-    title: 'Chamber A Bus Overcurrent Surge',
-    category: 'CURRENT OVERFLOW',
-    summary: 'Triggers power regulator failure. Chamber A main reactor current spikes to 235A (exceeding 180A limit), heating bus bars to 112°C.',
+    title: 'CURRENT OVERFLOW',
+    category: 'FAULT',
+    summary: 'CURRENT OVERFLOW',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -463,9 +463,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'eclss-power-loss',
-    title: 'Chamber D Power Failure',
-    category: 'POWER FAILURE',
-    summary: 'Disconnects Cable CB-04 feeding Chamber D. Current drops to 0.0A, triggering emergency life-safety alert.',
+    title: 'POWER CUT',
+    category: 'FAULT',
+    summary: 'POWER CUT',
     severity: 'CRITICAL',
     apply: (components) =>
       components.map((c) => {
@@ -482,9 +482,9 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'shield-thermal-overload',
-    title: 'Chamber G Thermal Overload',
-    category: 'TEMPERATURE & COIL STRESS',
-    summary: 'Chamber G coils overheat to 115°C under sustained pulse absorption with 48mA chassis leakage.',
+    title: 'TEMPEARTURE',
+    category: 'FAULT',
+    summary: 'TEMPEARTURE',
     severity: 'WARNING',
     apply: (components) =>
       components.map((c) => {
@@ -502,10 +502,12 @@ export const FAULT_PRESETS: FaultPreset[] = [
   },
   {
     id: 'nominal-restore',
-    title: 'Restore All Systems to Nominal',
-    category: 'NORMAL OPERATION',
-    summary: 'Plugs in all cables, clears ground fault leakages, normalizes temperatures, and sets all current draws to nominal ratings.',
+    title: 'RESET',
+    category: 'NORMAL',
+    summary: 'RESET',
     severity: 'NOMINAL',
     apply: () => INITIAL_COMPONENTS.map((c) => ({ ...c })),
   },
 ];
+
+

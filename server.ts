@@ -132,13 +132,15 @@ app.post("/api/ai/diagnose", async (req, res) => {
         remedy: string;
       }> = [];
 
-      let topConsumer = components?.[0] || null;
-      let totalCurrent = 0;
+      // Find true top consumer dynamically from active connected components
+      const activeComponents = components ? [...components].filter((c: any) => c.cableConnected && (c.currentDraw || 0) > 0) : [];
+      activeComponents.sort((a: any, b: any) => (b.currentDraw || 0) - (a.currentDraw || 0));
+      const topConsumer = activeComponents[0] || null;
 
+      let totalCurrent = 0;
       components?.forEach((c: any) => {
-        totalCurrent += c.currentDraw || 0;
-        if (!topConsumer || (c.currentDraw || 0) > (topConsumer.currentDraw || 0)) {
-          topConsumer = c;
+        if (c.cableConnected) {
+          totalCurrent += (c.currentDraw || 0);
         }
 
         // Cable disconnect / No current flow
@@ -277,9 +279,11 @@ Respond strictly with valid JSON conforming to this schema:
     if (geminiResult && geminiResult.text) {
       try {
         const parsed = JSON.parse(geminiResult.text.trim());
+        const localTelemetry = generateLocalDiagnosis();
         const responseData = {
           source: geminiResult.model,
           ...parsed,
+          topPowerConsumer: localTelemetry.topPowerConsumer || parsed.topPowerConsumer,
         };
         cachedDiagnosis = {
           payloadKey: cacheKey,

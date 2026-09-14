@@ -363,7 +363,7 @@ export default function App() {
     components.find((c) => c.id === inspectingComponentId) || null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-[#0e1420] text-slate-100 flex flex-col font-sans selection:bg-blue-600/30 selection:text-blue-200">
       {/* Top Navigation Header */}
       <Header
         gridHealthScore={gridHealthScore}
@@ -409,10 +409,9 @@ export default function App() {
           <CurrentConsumptionChart
             components={components}
             selectedComponentId={selectedComponentId}
-            onSelectComponent={(id) => {
-              setSelectedComponentId(id);
-              setInspectingComponentId(id);
-            }}
+            onSelectComponent={setSelectedComponentId}
+            onUpdateComponent={handleUpdateComponent}
+            onInspectComponent={setInspectingComponentId}
           />
 
           {/* Current Leakages & Short Circuit Risk Radar */}
@@ -447,11 +446,6 @@ export default function App() {
           onOpenChatDrawer={() => setIsChatDrawerOpen(true)}
         />
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-6 text-center text-xs font-mono text-slate-500">
-        AURA SPACECRAFT ELECTRICAL TELEMETRY SYSTEM • ORBITAL DIAGNOSTICS & FAULT PREVENTION • NASA/ESA AEROSPACE TOLERANCES
-      </footer>
 
       {/* Modals & Slide-out Drawers */}
       <AiIncidentReportModal

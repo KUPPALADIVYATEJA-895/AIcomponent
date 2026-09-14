@@ -43,21 +43,21 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         id="component-detail-modal"
-        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+        className="bg-[#131926] border border-[#232f42] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950">
+        <div className="flex items-center justify-between p-4 border-b border-[#232f42] bg-[#0f141f]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/20">
+            <div className="p-2 bg-blue-600/15 text-blue-400 rounded-lg border border-blue-500/30">
               <Cpu className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-slate-100 font-['Chakra_Petch']">
+                <h3 className="text-base font-bold text-slate-100 tracking-tight">
                   {component.name}
                 </h3>
-                <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-800 text-cyan-300 border border-slate-700">
-                  {component.id}
+                <span className="px-2 py-0.5 rounded text-xs font-mono bg-[#1b2332] text-slate-300 border border-[#2c384c]">
+                  {component.category}
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-mono">
@@ -68,17 +68,17 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-[#1b2332] text-slate-400 hover:text-slate-200 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-5 overflow-y-auto space-y-5 bg-slate-950/80">
+        <div className="p-5 overflow-y-auto space-y-5 bg-[#0f141f]">
           {/* Status Alert Banner if Anomaly */}
           {isDisconnected && (
-            <div className="p-3 bg-rose-950/50 border border-rose-800 rounded-lg flex items-center justify-between text-xs font-mono text-rose-200">
+            <div className="p-3 bg-rose-950/40 border border-rose-800/70 rounded-lg flex items-center justify-between text-xs font-mono text-rose-200">
               <div className="flex items-center gap-2">
                 <Unplug className="w-4 h-4 text-rose-400 shrink-0" />
                 <span>CABLE UNPLUGGED: Zero current flows to this unit (0.0A). Operational blackout.</span>
@@ -93,7 +93,7 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
           )}
 
           {isOver && !isDisconnected && (
-            <div className="p-3 bg-rose-950/50 border border-rose-800 rounded-lg flex items-center gap-2 text-xs font-mono text-rose-200">
+            <div className="p-3 bg-rose-950/40 border border-rose-800/70 rounded-lg flex items-center gap-2 text-xs font-mono text-rose-200">
               <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
               <span>OVERCURRENT OVERFLOW: Current draw ({component.currentDraw}A) exceeds rated max ({component.maxCurrent}A).</span>
             </div>
@@ -102,16 +102,16 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
           {/* Key Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* Metric 1: Current Draw */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-3">
+            <div className="bg-[#161d2b] border border-[#232f42] rounded-lg p-3">
               <span className="text-[10px] font-mono text-slate-400 block mb-1">CURRENT DRAW</span>
-              <div className="text-xl font-bold font-mono text-cyan-300">
+              <div className="text-xl font-bold font-mono text-slate-100">
                 {component.currentDraw.toFixed(1)} A
               </div>
               <span className="text-[10px] font-mono text-slate-500">Rated Max: {component.maxCurrent}A</span>
             </div>
 
             {/* Metric 2: Temperature */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-3">
+            <div className="bg-[#161d2b] border border-[#232f42] rounded-lg p-3">
               <span className="text-[10px] font-mono text-slate-400 block mb-1">TEMPERATURE</span>
               <div
                 className={`text-xl font-bold font-mono ${
@@ -128,11 +128,11 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
             </div>
 
             {/* Metric 3: Chassis Leakage */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-3">
+            <div className="bg-[#161d2b] border border-[#232f42] rounded-lg p-3">
               <span className="text-[10px] font-mono text-slate-400 block mb-1">GROUND LEAKAGE</span>
               <div
                 className={`text-xl font-bold font-mono ${
-                  component.leakageCurrent > 30 ? 'text-purple-400' : 'text-slate-100'
+                  component.leakageCurrent > 30 ? 'text-rose-400' : 'text-slate-100'
                 }`}
               >
                 {component.leakageCurrent.toFixed(1)} mA
@@ -141,7 +141,7 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
             </div>
 
             {/* Metric 4: Short Circuit Risk */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-3">
+            <div className="bg-[#161d2b] border border-[#232f42] rounded-lg p-3">
               <span className="text-[10px] font-mono text-slate-400 block mb-1">SHORT CIRCUIT RISK</span>
               <div
                 className={`text-xl font-bold font-mono ${
@@ -155,14 +155,14 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
           </div>
 
           {/* Description & Technical Specs */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-3.5 space-y-2 text-xs">
-            <h4 className="font-semibold text-slate-200 font-['Chakra_Petch']">
+          <div className="bg-[#161d2b] border border-[#232f42] rounded-lg p-3.5 space-y-2 text-xs">
+            <h4 className="font-bold text-slate-200">
               SUBSYSTEM SPECIFICATIONS
             </h4>
             <p className="text-slate-300 leading-relaxed font-sans">
               {component.description}
             </p>
-            <div className="grid grid-cols-2 gap-2 text-slate-400 font-mono text-[11px] pt-2 border-t border-slate-800/80">
+            <div className="grid grid-cols-2 gap-2 text-slate-400 font-mono text-[11px] pt-2 border-t border-[#232f42]">
               <div>Operating Power: <span className="text-slate-200 font-semibold">{component.specDetails.operatingPowerKw} kW</span></div>
               <div>Operating Voltage: <span className="text-slate-200 font-semibold">{component.voltage} V DC</span></div>
               <div>Insulation Dielectric: <span className="text-slate-200 font-semibold">{component.specDetails.insulationRatingKv} kV</span></div>
@@ -171,10 +171,10 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
           </div>
 
           {/* In-Modal Admin Controls */}
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
-            <h4 className="font-semibold text-slate-200 font-['Chakra_Petch'] text-xs flex items-center gap-1.5">
-              <Sliders className="w-4 h-4 text-cyan-400" />
-              DIRECT ADMIN OVERRIDES FOR THIS COMPONENT
+          <div className="bg-[#161d2b] border border-[#232f42] rounded-lg p-4 space-y-3">
+            <h4 className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+              <Sliders className="w-4 h-4 text-blue-400" />
+              DIRECT OVERRIDES FOR THIS COMPONENT
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -203,7 +203,7 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
                     status: 'NOMINAL',
                   });
                 }}
-                className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-mono flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2 px-3 bg-[#1b2332] hover:bg-[#232e42] border border-[#2c384c] text-slate-200 rounded-lg text-xs font-mono flex items-center justify-center gap-1.5 transition-colors"
               >
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 Restore to Nominal Values
@@ -213,10 +213,10 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 flex items-center justify-end">
+        <div className="p-3 border-t border-[#232f42] bg-[#0f141f] flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-mono transition-colors"
+            className="px-4 py-1.5 bg-[#1b2332] hover:bg-[#232e42] border border-[#2c384c] text-slate-200 rounded-lg text-xs font-mono transition-colors"
           >
             Close Inspector
           </button>

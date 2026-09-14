@@ -135,7 +135,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
 
   const handleCheckParticularComponent = (comp: SpacecraftComponent) => {
     setSelectedComponentId(comp.id);
-    handleSend(`Is there any fault occurring in ${comp.name} (${comp.id})?`);
+    handleSend(`Is there any fault occurring in ${comp.name}?`);
   };
 
   const recommendationOptions = [
@@ -180,25 +180,25 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
   return (
     <div
       id="ai-assistant-drawer-container"
-      className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-slate-900 border-l border-slate-700/80 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 font-sans"
+      className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-[#131926] border-l border-[#232f42] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 font-sans"
     >
       {/* Header */}
-      <div className="p-3.5 border-b border-slate-800 bg-slate-950 flex items-center justify-between shrink-0">
+      <div className="p-3.5 border-b border-[#232f42] bg-[#0f141f] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/30">
+          <div className="p-2 bg-blue-600/15 text-blue-400 rounded-lg border border-blue-500/30">
             <Bot className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-slate-100 font-['Chakra_Petch'] tracking-wide">
-                AURA DIAGNOSTIC AI
+              <h3 className="text-sm font-bold text-slate-100 tracking-tight">
+                FLIGHT ENGINEER ASSISTANT
               </h3>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 text-emerald-400 border border-emerald-800/80">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#1a2336] text-slate-300 border border-[#2c384c]">
                 ACTIVE TELEMETRY
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Orbital telemetry engineering assistant & chamber fault analysis console
+              Telemetry engineering assistant & chamber fault analysis console
             </p>
           </div>
         </div>
@@ -210,9 +210,9 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             id="btn-refresh-ai-chat"
             onClick={handleResetChat}
             title="Start new chat (clears all previous messages)"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700/80 hover:border-cyan-500/50 transition-all shadow-sm group"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-[#1b2332] hover:bg-[#232e42] text-slate-300 border border-[#2c384c] transition-colors shadow-sm group"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-cyan-400 group-hover:-rotate-90 transition-transform duration-200" />
+            <RotateCcw className="w-3.5 h-3.5 text-blue-400 group-hover:-rotate-90 transition-transform duration-200" />
             <span>New Chat</span>
           </button>
 
@@ -220,7 +220,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
           <button
             id="btn-close-ai-chat"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-[#1b2332] rounded-lg transition-colors"
             title="Close Assistant"
           >
             <X className="w-5 h-5" />
@@ -229,16 +229,16 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
       </div>
 
       {/* Recommendations & Component Audit Section */}
-      <div className="border-b border-slate-800/90 bg-slate-950/90 shrink-0 transition-all">
+      <div className="border-b border-[#232f42] bg-[#0f141f] shrink-0 transition-all">
         {/* Section Header with Small Arrow Toggle (<) */}
-        <div className="px-3 py-2 flex items-center justify-between bg-slate-950">
+        <div className="px-3 py-2 flex items-center justify-between bg-[#0f141f]">
           <button
             id="btn-toggle-options-collapse"
             onClick={() => setIsOptionsCollapsed((prev) => !prev)}
             className="flex items-center gap-2 group text-left focus:outline-none"
             title={isOptionsCollapsed ? 'Expand diagnostic options' : 'Collapse diagnostic options'}
           >
-            <div className="w-5 h-5 rounded flex items-center justify-center bg-slate-900 border border-slate-700/80 text-cyan-400 group-hover:border-cyan-500 group-hover:bg-slate-800 transition-all shadow-sm">
+            <div className="w-5 h-5 rounded flex items-center justify-center bg-[#161d2b] border border-[#232f42] text-blue-400 group-hover:border-blue-500 group-hover:bg-[#1b2332] transition-colors shadow-sm">
               <ChevronLeft
                 className={`w-3.5 h-3.5 transition-transform duration-200 ${
                   isOptionsCollapsed ? '-rotate-90' : 'rotate-0'
@@ -246,12 +246,12 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
               />
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                Diagnostic Options
+                Diagnostic Inquiries
               </span>
               <span className="text-[10px] font-mono text-slate-500">
-                {isOptionsCollapsed ? '(tap < to expand)' : '(inquiries & components)'}
+                {isOptionsCollapsed ? '(tap to expand)' : '(inquiries & chambers)'}
               </span>
             </div>
           </button>
@@ -275,17 +275,17 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                       id={opt.id}
                       onClick={() => handleSend(opt.query)}
                       disabled={isLoading}
-                      className={`p-2 rounded-lg bg-slate-900/90 border border-slate-800/90 ${opt.border} text-left transition-all group relative overflow-hidden flex flex-col justify-between`}
+                      className="p-2 rounded-lg bg-[#161d2b] border border-[#232f42] hover:border-blue-500 text-left transition-colors group relative overflow-hidden flex flex-col justify-between"
                     >
                       <div className="flex items-center justify-between w-full mb-1">
-                        <span className="p-1 rounded bg-slate-800 text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                        <span className="p-1 rounded bg-[#131926] text-blue-400 group-hover:text-blue-300 transition-colors">
                           <Icon className="w-3.5 h-3.5" />
                         </span>
                         <span className="text-[9px] font-mono text-slate-500 group-hover:text-slate-400">
                           {opt.badge}
                         </span>
                       </div>
-                      <div className="text-xs font-semibold text-slate-200 group-hover:text-cyan-300 leading-tight">
+                      <div className="text-xs font-semibold text-slate-200 group-hover:text-blue-300 leading-tight">
                         {opt.label}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
@@ -298,11 +298,11 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             </div>
 
             {/* Particular Component Selector */}
-            <div className="pt-2 border-t border-slate-800/70">
+            <div className="pt-2 border-t border-[#232f42]">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-                  Check Particular Component
+                  <Sliders className="w-3.5 h-3.5 text-blue-400" />
+                  Check Particular Chamber
                 </span>
                 <span className="text-[10px] font-mono text-slate-500">Tap to audit module</span>
               </div>
@@ -323,22 +323,19 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                       onClick={() => handleCheckParticularComponent(c)}
                       disabled={isLoading}
                       title={`Click to check ${c.name} for faults`}
-                      className={`p-1.5 rounded text-left border transition-all ${
+                      className={`p-1.5 rounded text-left border transition-colors ${
                         selectedComponentId === c.id
-                          ? 'bg-cyan-950 border-cyan-500 text-cyan-200 ring-1 ring-cyan-500/50'
-                          : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700 text-slate-300'
+                          ? 'bg-[#1a2436] border-blue-500 text-blue-200 ring-1 ring-blue-500/50'
+                          : 'bg-[#161d2b] hover:bg-[#1e2838] border-[#232f42] hover:border-[#2a374b] text-slate-300'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-[10px] font-mono font-bold">{c.id}</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-200">{c.name}</span>
                         <span
                           className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                             hasFault ? 'bg-rose-500 animate-pulse' : 'bg-emerald-400'
                           }`}
                         />
-                      </div>
-                      <div className="text-[9px] truncate text-slate-400 leading-tight mt-0.5">
-                        {c.name}
                       </div>
                     </button>
                   );
@@ -350,7 +347,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
       </div>
 
       {/* Message Stream */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-950/60 font-sans">
+      <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-[#0d121c] font-sans">
         {messages.map((m) => (
           <div
             key={m.id}
@@ -359,8 +356,8 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs ${
                 m.sender === 'user'
-                  ? 'bg-cyan-600 text-white shadow-md shadow-cyan-950'
-                  : 'bg-slate-800 border border-cyan-500/30 text-cyan-400'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-[#1b2332] border border-[#2c384c] text-blue-400'
               }`}
             >
               {m.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -369,18 +366,20 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             <div
               className={`p-3.5 rounded-xl max-w-[88%] text-xs leading-relaxed ${
                 m.sender === 'user'
-                  ? 'bg-cyan-950/80 border border-cyan-700/80 text-cyan-100 shadow-sm'
-                  : 'bg-slate-900 border border-slate-800 text-slate-200 shadow-md'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-[#161d2b] border border-[#232f42] text-slate-200 shadow-sm'
               }`}
             >
               {m.sender === 'user' ? (
                 <p className="whitespace-pre-wrap font-medium">{m.text}</p>
               ) : (
-                <div className="space-y-2 prose-invert text-slate-200 [&_h3]:text-xs [&_h3]:font-bold [&_h3]:text-cyan-300 [&_h3]:mb-1 [&_p]:mb-1.5 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_strong]:text-cyan-200 [&_strong]:font-semibold [&_li]:text-slate-300">
+                <div className="space-y-2 prose-invert text-slate-200 [&_h3]:text-xs [&_h3]:font-bold [&_h3]:text-blue-300 [&_h3]:mb-1 [&_p]:mb-1.5 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_strong]:text-slate-100 [&_strong]:font-semibold [&_li]:text-slate-300">
                   <Markdown>{m.text}</Markdown>
                 </div>
               )}
-              <span className="text-[9px] font-mono text-slate-500 block text-right mt-1.5 pt-1 border-t border-slate-800/60">
+              <span className={`text-[9px] font-mono block text-right mt-1.5 pt-1 border-t ${
+                m.sender === 'user' ? 'text-blue-200/80 border-blue-500/50' : 'text-slate-500 border-[#232f42]'
+              }`}>
                 {m.timestamp}
               </span>
             </div>
@@ -388,16 +387,16 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
         ))}
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 p-2.5 bg-slate-900/80 rounded-lg border border-cyan-900/50">
-            <Sparkles className="w-4 h-4 animate-spin text-cyan-400" />
-            <span>AI Flight Engineer evaluating component telemetry & physics models...</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-blue-400 p-2.5 bg-[#161d2b] rounded-lg border border-[#232f42]">
+            <Sparkles className="w-4 h-4 animate-spin text-blue-400" />
+            <span>Flight Engineer evaluating chamber telemetry & physics models...</span>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Chat Input Bar */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
+      <div className="p-3 border-t border-[#232f42] bg-[#0f141f] shrink-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -410,14 +409,14 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask AI about cables, leakage, temperatures, or components..."
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-sans"
+            placeholder="Ask about cables, leakage, temperatures, or chambers..."
+            className="flex-1 bg-[#161d2b] border border-[#232f42] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-sans"
           />
           <button
             id="btn-send-engineer-chat"
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="p-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white rounded-lg transition-colors shadow-sm"
+            className="p-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-lg transition-colors shadow-sm"
           >
             <Send className="w-4 h-4" />
           </button>
