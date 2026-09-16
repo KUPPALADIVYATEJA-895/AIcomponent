@@ -84,9 +84,8 @@ export const Header: React.FC<HeaderProps> = ({
     >
       {/* Top Aerospace Ticker Strip Controls */}
       <div className="max-w-7xl mx-auto flex items-center justify-between text-[10px] font-mono text-slate-400 pb-2 mb-2 border-b border-[#182333]">
-        {/* Left: Role Switcher & Security Admin Link */}
+        {/* Left: Security Admin Link (First) then Role Switcher (Second) */}
         <div className="flex items-center gap-2">
-          <RoleSelector />
           {onOpenRbacModal && (
             <button
               id="btn-header-rbac-admin"
@@ -98,6 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Access Control</span>
             </button>
           )}
+          <RoleSelector />
         </div>
 
         {/* Master Caution Indicator, Theme Switcher & Audio Controls */}
@@ -156,9 +156,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Global Grid Status Telemetry Badges */}
+        {/* Global Grid Status Telemetry Badges & Action Buttons */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Health Index */}
+          {/* 1. Health Index */}
           <div className="bg-[#121a28] border border-[#212e42] rounded-xl px-3 py-1.5 hidden md:block shadow-sm">
             <span className="text-[10px] font-mono text-slate-400 block tracking-wider">GRID HEALTH</span>
             <div className="flex items-center gap-1.5 font-mono font-bold text-sm">
@@ -177,7 +177,18 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Anomaly Status */}
+          {/* 2. AI Diagnosis (Placed 2nd and always fully visible) */}
+          <button
+            id="btn-header-reanalyze"
+            onClick={onRefreshDiagnosis}
+            disabled={isLoadingDiagnosis}
+            className="px-3 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all disabled:opacity-50"
+          >
+            <Sparkles className={`w-3.5 h-3.5 ${isLoadingDiagnosis ? 'animate-spin' : ''}`} />
+            <span>AI Diagnosis</span>
+          </button>
+
+          {/* 3. Anomaly Status */}
           <div className="bg-[#121a28] border border-[#212e42] rounded-xl px-3 py-1.5 hidden md:block shadow-sm">
             <span className="text-[10px] font-mono text-slate-400 block tracking-wider">ANOMALY STATUS</span>
             <span
@@ -189,18 +200,8 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
 
-          {/* Action Buttons */}
+          {/* Other Action Buttons */}
           <div className="flex items-center gap-1.5">
-            <button
-              id="btn-header-reanalyze"
-              onClick={onRefreshDiagnosis}
-              disabled={isLoadingDiagnosis}
-              className="px-3 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all disabled:opacity-50"
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${isLoadingDiagnosis ? 'animate-spin' : ''}`} />
-              <span>AI Diagnosis</span>
-            </button>
-
             <button
               id="btn-header-report"
               onClick={onOpenReportModal}
