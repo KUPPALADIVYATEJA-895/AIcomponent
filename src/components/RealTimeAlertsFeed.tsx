@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DiagnosticIssue, SpacecraftComponent } from '../types';
+import { useRbac } from '../context/RbacContext';
 import {
   AlertTriangle,
   Flame,
@@ -10,6 +11,7 @@ import {
   Filter,
   Wrench,
   ArrowRight,
+  Lock,
 } from 'lucide-react';
 
 interface RealTimeAlertsFeedProps {
@@ -25,6 +27,7 @@ export const RealTimeAlertsFeed: React.FC<RealTimeAlertsFeedProps> = ({
   onAutoFixIssue,
   onExecuteFullMitigation,
 }) => {
+  const { currentRole, canApproveRecommendations } = useRbac();
   const [filterSeverity, setFilterSeverity] = useState<'ALL' | 'CRITICAL' | 'HIGH' | 'WARNING'>('ALL');
 
   const filteredIssues = issues.filter((iss) => {
@@ -66,19 +69,7 @@ export const RealTimeAlertsFeed: React.FC<RealTimeAlertsFeedProps> = ({
                 <h3 className="text-sm font-bold text-slate-100 tracking-tight">
                   REAL-TIME TELEMETRY ALERTS
                 </h3>
-                <span
-                  className={`px-2 py-0.5 rounded text-xs font-mono font-bold ${
-                    issues.length > 0
-                      ? 'bg-rose-950/70 text-rose-300 border border-rose-800/60'
-                      : 'bg-emerald-950/70 text-emerald-300 border border-emerald-800/60'
-                  }`}
-                >
-                  {issues.length} {issues.length === 1 ? 'ALERT' : 'ALERTS'}
-                </span>
               </div>
-              <p className="text-[11px] text-slate-400">
-                Live anomaly stream with immediate remediation triggers.
-              </p>
             </div>
           </div>
 
@@ -171,10 +162,20 @@ export const RealTimeAlertsFeed: React.FC<RealTimeAlertsFeedProps> = ({
                     <button
                       id={`btn-fix-alert-${issue.id}`}
                       onClick={() => onAutoFixIssue(issue)}
-                      className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-mono font-medium whitespace-nowrap flex items-center gap-1 transition-colors self-end sm:self-auto shadow-sm"
+                      disabled={!canApproveRecommendations}
+                      title={
+                        canApproveRecommendations
+                          ? 'Approve and execute recommendation'
+                          : 'Senior Engineer role required to approve recommendations'
+                      }
+                      className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 disabled:cursor-not-allowed text-white rounded text-[11px] font-mono font-medium whitespace-nowrap flex items-center gap-1 transition-colors self-end sm:self-auto shadow-sm"
                     >
-                      <Wrench className="w-3 h-3" />
-                      Remediate
+                      {canApproveRecommendations ? (
+                        <Wrench className="w-3 h-3" />
+                      ) : (
+                        <Lock className="w-3 h-3 text-slate-300" />
+                      )}
+                      {canApproveRecommendations ? 'Approve & Fix' : 'Approval Locked'}
                     </button>
                   </div>
                 </div>
@@ -194,10 +195,22 @@ export const RealTimeAlertsFeed: React.FC<RealTimeAlertsFeedProps> = ({
           <button
             id="btn-resolve-all-faults"
             onClick={onExecuteFullMitigation}
-            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-mono font-semibold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+            disabled={!canApproveRecommendations}
+            title={
+              canApproveRecommendations
+                ? 'Approve and execute full mitigation'
+                : 'Senior Engineer role required to approve recommendations'
+            }
+            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 disabled:hover:bg-emerald-700 disabled:cursor-not-allowed text-white font-mono font-semibold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            EXECUTE FULL MITIGATION PROTOCOL
+            {canApproveRecommendations ? (
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            ) : (
+              <Lock className="w-3.5 h-3.5" />
+            )}
+            {canApproveRecommendations
+              ? 'EXECUTE FULL MITIGATION PROTOCOL'
+              : 'MITIGATION APPROVAL LOCKED'}
           </button>
         </div>
       )}

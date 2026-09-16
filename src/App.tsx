@@ -20,8 +20,13 @@ import { AiDiagnosticsPanel } from './components/AiDiagnosticsPanel';
 import { AiIncidentReportModal } from './components/AiIncidentReportModal';
 import { AiAssistantDrawer } from './components/AiAssistantDrawer';
 import { ComponentDetailModal } from './components/ComponentDetailModal';
+import { EmergencyWarningAlert } from './components/EmergencyWarningAlert';
+import { RbacManagementModal } from './components/RbacManagementModal';
+import { useTheme } from './context/ThemeContext';
 
 export default function App() {
+  const { theme, isIndustrial, isHazard } = useTheme();
+
   // 1. Core State
   const [components, setComponents] = useState<SpacecraftComponent[]>(() =>
     INITIAL_COMPONENTS.map(evaluateComponent)
@@ -39,6 +44,10 @@ export default function App() {
   const [reportContent, setReportContent] = useState<string>('');
   const [isLoadingReport, setIsLoadingReport] = useState<boolean>(false);
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState<boolean>(false);
+  const [isRbacModalOpen, setIsRbacModalOpen] = useState<boolean>(false);
+  const [isAlertDismissed, setIsAlertDismissed] = useState<boolean>(false);
+  const [alertTriggerKey, setAlertTriggerKey] = useState<number>(0);
+  const [prevIssuesCount, setPrevIssuesCount] = useState<number>(0);
 
   // Derive active issues from components
   const deriveIssues = useCallback((comps: SpacecraftComponent[]): DiagnosticIssue[] => {
@@ -314,12 +323,22 @@ export default function App() {
     );
   };
 
+  const handleFaultTriggered = (_faultTitle?: string) => {
+    setIsAlertDismissed(false);
+    setAlertTriggerKey(Date.now());
+  };
+
   const handleApplyPreset = (preset: FaultPreset) => {
     setComponents((prev) => preset.apply(prev).map(evaluateComponent));
+    if (preset.id !== 'nominal-restore') {
+      setIsAlertDismissed(false);
+      setAlertTriggerKey(Date.now());
+    }
   };
 
   const handleResetAll = () => {
     setComponents(INITIAL_COMPONENTS.map(evaluateComponent));
+    setIsAlertDismissed(false);
   };
 
   // 8. One-Click AI Remediation Handlers
@@ -363,7 +382,29 @@ export default function App() {
     components.find((c) => c.id === inspectingComponentId) || null;
 
   return (
-    <div className="min-h-screen bg-[#0e1420] text-slate-100 flex flex-col font-sans selection:bg-blue-600/30 selection:text-blue-200">
+    <div
+      id="app-root-canvas"
+      data-theme={theme}
+      className={`min-h-screen flex flex-col font-sans telemetry-bg-grid relative transition-colors duration-300 ${
+        isHazard
+          ? 'bg-[#0A0A0B] text-white selection:bg-[#FACC15]/40 selection:text-black'
+          : isIndustrial
+          ? 'bg-[#2B303A] text-[#EAD7C3] selection:bg-[#E28743]/40 selection:text-[#1B1E26]'
+          : 'bg-[#070b12] text-slate-100 selection:bg-blue-600/30 selection:text-blue-200'
+      }`}
+    >
+      {/* Real-time Emergency Warning Alert (Automatically displays on screen when fault occurs with red color and blinks until Fix It is clicked) */}
+      <EmergencyWarningAlert
+        issues={issues}
+        components={components}
+        onFixIssue={handleAutoFixIssue}
+        onFixAll={handleExecuteFullMitigation}
+        onSelectComponent={setSelectedComponentId}
+        isDismissed={isAlertDismissed}
+        onClose={() => setIsAlertDismissed(true)}
+        alertTriggerKey={alertTriggerKey}
+      />
+
       {/* Top Navigation Header */}
       <Header
         gridHealthScore={gridHealthScore}
@@ -375,6 +416,8 @@ export default function App() {
         onRefreshDiagnosis={fetchAiDiagnosis}
         onResetAll={handleResetAll}
         isLoadingDiagnosis={isLoadingDiagnosis}
+        onOpenEmergencyAlert={() => setIsAlertDismissed(false)}
+        onOpenRbacModal={() => setIsRbacModalOpen(true)}
       />
 
       {/* Main Dashboard Canvas */}
@@ -390,6 +433,7 @@ export default function App() {
           onResetAll={handleResetAll}
           isSimulating={isSimulating}
           setIsSimulating={setIsSimulating}
+          onFaultTriggered={handleFaultTriggered}
         />
 
         {/* 2. Interactive Circuit Topology & Cable Network Graph */}
@@ -466,6 +510,11 @@ export default function App() {
         component={inspectingComponent}
         onClose={() => setInspectingComponentId(null)}
         onUpdateComponent={handleUpdateComponent}
+      />
+
+      <RbacManagementModal
+        isOpen={isRbacModalOpen}
+        onClose={() => setIsRbacModalOpen(false)}
       />
     </div>
   );

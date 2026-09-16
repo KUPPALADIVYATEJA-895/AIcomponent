@@ -321,169 +321,218 @@ app.post("/api/ai/chat", async (req, res) => {
   try {
     const { message, systemState } = req.body;
     const components: any[] = systemState?.components || [];
-
-    const prompt = `You are AURA, the spacecraft's electrical systems diagnostic and flight engineer.
-Current live spacecraft electrical telemetry:
-${JSON.stringify(systemState, null, 2)}
-
-User question: "${message}"
-
-Follow these diagnostic evaluation rules based on the user's intent:
-1. "Which component consumes more power / current":
-   - Identify the highest power-consuming chamber or machinery based on active current draw (Amperes) and percentage of total bus load.
-   - Note whether its draw is normal or an overcurrent hazard.
-   - Also mention any component/chamber with 0A / disconnected power.
-2. "Which component has current leakage":
-   - Inspect chassis ground leakage (leakageCurrent in mA).
-   - If any chamber has leakage > 20 mA (or high risk), identify the chamber, its exact mA, hazard level, and isolation/grounding solution.
-   - If NO chamber has elevated leakage (all <= 20 mA), explicitly state: "No abnormal current leakage detected. All chamber insulation barriers are intact and chassis ground return is clean."
-3. "Which component has high temperature":
-   - Inspect chamber operating temperatures (°C).
-   - If any chamber exceeds nominal/safe thermal thresholds (>75°C or status WARNING/CRITICAL), detail the chamber, exact temperature, thermal runaway risk, and cooling remediation.
-   - If NO chamber is overheating, state clearly: "All spacecraft chambers are operating in normal thermal equilibrium."
-4. "Faults and risks list" or "List of faults":
-   - If there ARE active faults (cables unplugged, current overflow, high temperature, chassis leakage > 20mA, short circuit risk >= 50%):
-     Provide a comprehensive, itemized report listing each fault found, which chamber it belongs to, exact metric readings, and the step-by-step engineering solution.
-   - If there are NO faults in the system (all chambers nominal):
-     Explicitly state: "No faults detected in the system. All chambers are working good!" and provide a clean confirmation checklist.
-5. Specific chamber inquiry (e.g. asking about a particular chamber like Chamber A, Chamber B, Chamber C, etc.):
-   - Inspect that exact chamber in the telemetry.
-   - If it has ANY fault (cable disconnected/0A, overcurrent, elevated temperature, ground leakage, short-circuit risk): explain the exact fault and give the solution to solve it.
-   - If it has NO fault: explicitly respond with: "No fault detected in [Chamber Name]. All parameters (Current Draw, Temperature, Cable Connection, and Ground Isolation) are operating within nominal specifications."
-
-Format your response clearly using markdown with bold headings and bullet points. Maintain professional aerospace engineering tone.`;
-
-    const geminiResult = await safeGeminiGenerate(prompt);
-    if (geminiResult && geminiResult.text) {
-      return res.json({ reply: geminiResult.text });
-    }
-
-    // Dynamic, telemetry-aware rule engine for /api/ai/chat fallback
     const msg = (message || "").toLowerCase();
+
+    // Deterministic, telemetry-aware diagnostic rule engine strictly adhering to user-defined keyword rules:
+    // 1. "power" or "consume" -> 1st data (Top Power Consumer)
+    // 2. "current" or "leakage" / "leakge" -> 2nd data (Current Leakage Check)
+    // 3. "high" or "temperature" -> 3rd data (High Temperature Monitor)
+    // 4. "risk", "faults", or "list" -> 4th data (Faults & Risks List)
     let reply = "";
 
-    // 1. Highest Power Consumer
-    if (
-      msg.includes("consumes more power") ||
-      msg.includes("more power") ||
-      msg.includes("most current") ||
-      msg.includes("top consumer") ||
-      msg.includes("power consumer")
-    ) {
+    // Rule 1: contains "power" or "consume" (or "consumption") -> 1st data
+    if (msg.includes("power") || msg.includes("consume") || msg.includes("consumption")) {
       if (components.length > 0) {
-        const sorted = [...components].sort((a, b) => b.currentDraw - a.currentDraw);
+        const sorted = [...components].sort(
+          (a, b) => (b.cableConnected ? b.currentDraw || 0 : 0) - (a.cableConnected ? a.currentDraw || 0 : 0)
+        );
         const top = sorted[0];
-        const totalAmps = components.reduce((sum, c) => sum + (c.currentDraw || 0), 0);
-        const share = totalAmps > 0 ? ((top.currentDraw / totalAmps) * 100).toFixed(1) : "0";
-        const zeroFlow = components.filter((c) => c.currentDraw === 0 || !c.cableConnected);
+        const totalAmps = components.reduce((sum, c) => sum + (c.cableConnected ? c.currentDraw || 0 : 0), 0);
+        const totalKw = (totalAmps * 480) / 1000;
+        const topKw = top && top.cableConnected ? (((top.currentDraw || 0) * 480) / 1000).toFixed(2) : "0.00";
+        const share = totalAmps > 0 && top && top.cableConnected ? (((top.currentDraw || 0) / totalAmps) * 100).toFixed(1) : "0.0";
+        const disconnected = components.filter((c) => !c.cableConnected || c.currentDraw === 0);
 
-        reply = `### ⚡ Top Power Consumption Audit\n\n` +
-          `**Primary Consumer:** **${top.name} (${top.id})**\n` +
-          `- **Current Draw:** ${top.currentDraw.toFixed(1)} A (${share}% of total 480V DC grid load)\n` +
-          `- **Operating Status:** ${top.status}\n` +
-          `- **Thermal Load:** ${top.temperature.toFixed(1)}°C\n\n` +
-          `**Grid Load Breakdown:**\n` +
-          sorted.slice(0, 3).map((c, i) => `${i + 1}. **${c.name}**: ${c.currentDraw.toFixed(1)} A (${totalAmps > 0 ? ((c.currentDraw / totalAmps) * 100).toFixed(0) : 0}%)`).join("\n") +
-          (zeroFlow.length > 0
-            ? `\n\n⚠️ **Zero Current Flow Detected:**\n${zeroFlow.map((c) => `- **${c.name} (${c.id})**: 0.0 A (${!c.cableConnected ? "Cable Umbilical Unplugged / Open Circuit" : "Standby / De-energized"})`).join("\n")}`
+        reply =
+          `### ⚡ 1. Top Power Consumer & Grid Load Audit\n\n` +
+          (top && top.cableConnected && (top.currentDraw || 0) > 0
+            ? `**Primary Power Consumer:** **${top.name} (${top.id})**\n` +
+              `- **Current Draw:** **${top.currentDraw.toFixed(1)} A** (Nominal: ${top.nominalCurrent || 60} A | Max Rating: ${top.maxCurrent || 100} A)\n` +
+              `- **Power Consumption:** **${topKw} kW** (${share}% of aggregate 480V DC grid load)\n` +
+              `- **Operational Status:** ${(top.currentDraw || 0) > (top.maxCurrent || 100) ? "🚨 OVERCURRENT HAZARD" : top.status || "NOMINAL"}\n` +
+              `- **Core Temperature:** ${(top.temperature || 45).toFixed(1)}°C\n\n`
+            : `**Status:** All chambers are currently de-energized or disconnected from the 480V DC main bus.\n\n`) +
+          `**Spacecraft Machinery Power Consumption Ranking:**\n` +
+          sorted
+            .map((c, i) => {
+              const kw = c.cableConnected ? (((c.currentDraw || 0) * 480) / 1000).toFixed(2) : "0.00";
+              const pct = totalAmps > 0 && c.cableConnected ? (((c.currentDraw || 0) / totalAmps) * 100).toFixed(1) : "0.0";
+              const note = !c.cableConnected ? " [DISCONNECTED / 0A]" : (c.currentDraw || 0) > (c.maxCurrent || 100) ? " [OVERLOAD]" : "";
+              return `${i + 1}. **${c.name}**: **${c.cableConnected ? (c.currentDraw || 0).toFixed(1) : "0.0"} A** (${kw} kW, ${pct}% load)${note}`;
+            })
+            .join("\n") +
+          `\n\n**Aggregate Bus Telemetry:** **${totalAmps.toFixed(1)} A** across all nodes (**${totalKw.toFixed(2)} kW** total dissipation).` +
+          (disconnected.length > 0
+            ? `\n\n⚠️ **Zero Current Flow / Disconnected Modules:**\n${disconnected
+                .map((c) => `- **${c.name} (${c.id})**: 0.0 A (${!c.cableConnected ? "Umbilical Unplugged / Open Circuit" : "Standby / De-energized"})`)
+                .join("\n")}`
             : "");
       } else {
         reply = `Telemetry offline: Unable to calculate power consumption ranking.`;
       }
     }
 
-    // 2. Current Leakage Audit
-    else if (
-      msg.includes("current leakage") ||
-      msg.includes("leakage") ||
-      msg.includes("ground fault") ||
-      msg.includes("chassis leak")
-    ) {
+    // 2. Second: "current" or "leakage" (or "leakge", "leak") -> 2nd diagnostic domain (Current Leakage Check)
+    else if (msg.includes("leakage") || msg.includes("leakge") || msg.includes("leak") || msg.includes("current")) {
       const leaking = components.filter((c) => (c.leakageCurrent || 0) > 20);
+
       if (leaking.length > 0) {
-        reply = `### 🧲 Current Leakage & Ground Fault Telemetry\n\n` +
-          `**Detected Active Ground Leakages:**\n\n` +
-          leaking.map((c) => (
-            `- **${c.name} (${c.id})**:\n` +
-            `  • **Leakage Current:** **${c.leakageCurrent.toFixed(1)} mA** to titanium chassis\n` +
-            `  • **Short Circuit Risk Index:** ${c.shortCircuitRisk}%\n` +
-            `  • **Hazard Evaluation:** Dielectric degradation detected. Moisture or insulation chafing bridging conductors to hull.\n` +
-            `  • **Recommended Solution:** Isolate branch circuit breaker, re-seat harness shielding, and spray dielectric sealant onto umbilical terminal.`
-          )).join("\n\n");
+        reply =
+          `### 🧲 2. Chassis Current Leakage & Ground Isolation Audit\n\n` +
+          `🚨 **Active Chassis Ground Faults Detected (${leaking.length} Chamber${leaking.length > 1 ? "s" : ""}):**\n\n` +
+          leaking
+            .map(
+              (c) =>
+                `#### **${c.name} (${c.id})**\n` +
+                `- **Leakage Current:** **${c.leakageCurrent.toFixed(1)} mA** to titanium chassis (Safety Limit: 20.0 mA)\n` +
+                `- **Short Circuit Risk Index:** **${c.shortCircuitRisk || 0}%**\n` +
+                `- **Hazard Level:** ${(c.leakageCurrent || 0) > 50 ? "CRITICAL - High Arc Flash / Shock Hazard" : "ELEVATED - Dielectric Breakdown"}\n` +
+                `- **Underlying Cause:** Micro-fractures or moisture condensation bridging conductor insulation to titanium chassis frame.\n` +
+                `- **Prescribed Engineering Solution:** Engage branch galvanic isolation relay, deploy aeroshell dielectric sealant to terminal blocks, and reset chassis ground fault detector.`
+            )
+            .join("\n\n") +
+          `\n\n**Chassis Leakage Across All Spacecraft Chambers:**\n` +
+          components
+            .map((c) => `- **${c.name}**: **${(c.leakageCurrent || 0).toFixed(1)} mA** ${(c.leakageCurrent || 0) > 20 ? "⚠️ [ELEVATED GROUND FAULT]" : "✓ (Insulation Intact)"}`)
+            .join("\n");
       } else {
-        reply = `### 🧲 Current Leakage & Ground Fault Telemetry\n\n` +
-          `**No abnormal current leakage detected.**\n\n` +
-          `All spacecraft component dielectric insulation barriers are intact. Monitored chassis leakage across all 8 nodes remains below the 20.0 mA safety threshold (nominal baseline < 5.0 mA). No ground fault remediation is required.`;
+        reply =
+          `### 🧲 2. Chassis Current Leakage & Ground Isolation Audit\n\n` +
+          `✅ **No abnormal current leakage detected.**\n\n` +
+          `All spacecraft component dielectric insulation barriers are intact and operating within aerospace safety parameters. Monitored chassis leakage across all 8 chambers remains below the 20.0 mA safety threshold (nominal baseline < 5.0 mA). No ground fault remediation is required.\n\n` +
+          `**Monitored Chassis Leakage Across All Chambers:**\n` +
+          components
+            .map((c) => `- **${c.name}**: **${(c.leakageCurrent || 0).toFixed(1)} mA** ✓ (Insulation Intact)`)
+            .join("\n");
       }
     }
 
-    // 3. High Temperature Monitor
-    else if (
-      msg.includes("high temperature") ||
-      msg.includes("hot") ||
-      msg.includes("overheat") ||
-      msg.includes("temperature")
-    ) {
-      const hot = components.filter((c) => (c.temperature || 0) > 75 || c.status === "CRITICAL" || c.status === "WARNING");
+    // 3. Third: "high" or "temperature" (or "temp", "thermal", "hot") -> 3rd diagnostic domain (High Temperature Monitor)
+    else if (msg.includes("high") || msg.includes("temperature") || msg.includes("temp") || msg.includes("thermal") || msg.includes("hot")) {
+      const hot = components.filter((c) => (c.temperature || 0) > (c.tempThreshold || 75) || c.status === "CRITICAL" || c.status === "WARNING");
+      const sortedTemps = [...components].sort((a, b) => (b.temperature || 0) - (a.temperature || 0));
+
       if (hot.length > 0) {
-        reply = `### 🌡️ Thermal Overheat Diagnostic Report\n\n` +
-          `**Elevated Temperature Components:**\n\n` +
-          hot.map((c) => (
-            `- **${c.name} (${c.id})**:\n` +
-            `  • **Current Core Temperature:** **${c.temperature.toFixed(1)}°C**\n` +
-            `  • **Thermal Status:** ${c.status}\n` +
-            `  • **Underlying Cause:** Resistive Joule heating under sustained load (${c.currentDraw.toFixed(1)} A) or insufficient cryogenic heat-sink flow.\n` +
-            `  • **Prescribed Solution:** Throttle power throughput or cycle auxiliary Cryogenic Coolant Distribution Pump to restore nominal 45°C–65°C equilibrium.`
-          )).join("\n\n");
+        reply =
+          `### 🌡️ 3. High Temperature & Thermal Dissipation Audit\n\n` +
+          `🔥 **Chambers Operating Above Safe Thermal Thresholds (${hot.length} Chamber${hot.length > 1 ? "s" : ""}):**\n\n` +
+          hot
+            .map((c) => {
+              const threshold = c.tempThreshold || 75;
+              const delta = (c.temperature || 0) - threshold;
+              return (
+                `#### **${c.name} (${c.id})**\n` +
+                `- **Current Core Temperature:** **${(c.temperature || 0).toFixed(1)}°C** (Rated Limit: ${threshold}°C | Delta: +${delta.toFixed(1)}°C)\n` +
+                `- **Thermal Status:** ${(c.temperature || 0) >= (c.tempMax || 95) ? "🚨 CRITICAL (Max Temp Exceeded)" : "⚠️ WARNING (Thermal Throttle Required)"}\n` +
+                `- **Active Current Load:** ${(c.currentDraw || 0).toFixed(1)} A\n` +
+                `- **Underlying Cause:** Resistive Joule heating under sustained load or insufficient cryogenic heat-sink flow.\n` +
+                `- **Prescribed Solution:** Throttle power duty cycle or cycle auxiliary Cryogenic Coolant Distribution Pump to restore nominal 45°C–65°C equilibrium.`
+              );
+            })
+            .join("\n\n") +
+          `\n\n**Chamber Thermal Readings (Highest to Lowest):**\n` +
+          sortedTemps
+            .map((c) => `- **${c.name}**: **${(c.temperature || 0).toFixed(1)}°C** / Limit ${c.tempThreshold || 75}°C ${(c.temperature || 0) > (c.tempThreshold || 75) ? "🔥 [OVERHEATING]" : "✓ [NOMINAL]"}`)
+            .join("\n");
       } else {
-        reply = `### 🌡️ Thermal Overheat Diagnostic Report\n\n` +
-          `**All components are operating within safe thermal equilibrium.**\n\n` +
-          `No machinery node exceeds thermal threshold boundaries. All component core temperatures are operating normally between 40°C and 72°C. Cryogenic heat sinks and passive radiators are dissipating nominal thermal output.`;
+        reply =
+          `### 🌡️ 3. High Temperature & Thermal Dissipation Audit\n\n` +
+          `✅ **All spacecraft chambers are operating in safe thermal equilibrium.**\n\n` +
+          `No machinery node exceeds thermal threshold boundaries. All component core temperatures are operating normally between 40°C and 72°C. Cryogenic heat sinks and passive radiators are dissipating nominal thermal output.\n\n` +
+          `**Chamber Thermal Readings:**\n` +
+          sortedTemps
+            .map((c) => `- **${c.name}**: **${(c.temperature || 0).toFixed(1)}°C** ✓ [NOMINAL]`)
+            .join("\n");
       }
     }
 
-    // 4. Faults and Risks List
-    else if (
-      msg.includes("faults risks list") ||
-      msg.includes("faults and risks") ||
-      msg.includes("list of fault") ||
-      msg.includes("list of all faults") ||
-      msg.includes("all faults") ||
-      msg.includes("fault list")
-    ) {
-      const faults: string[] = [];
+    // 4. Fourth: "risk", "faults", "fault", or "list" -> 4th diagnostic domain (Faults & Risks Manifest)
+    else if (msg.includes("risk") || msg.includes("fault") || msg.includes("faults") || msg.includes("list")) {
+      const faults: Array<{
+        chamber: string;
+        id: string;
+        type: string;
+        severity: string;
+        metrics: string;
+        solution: string;
+      }> = [];
 
       components.forEach((c) => {
         if (!c.cableConnected) {
-          faults.push(`- **${c.name} (${c.id})** [OPEN CIRCUIT / POWER LOSS]: Cable umbilical disconnected. Current flow interrupted (0.0 A). **Remedy:** Re-engage umbilical quick-lock collar.`);
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: "Open Circuit / Cable Umbilical Disconnect",
+            severity: "CRITICAL",
+            metrics: "Current Flow: 0.0 A (Blackout)",
+            solution: "Re-engage umbilical quick-lock collar and verify pin engagement.",
+          });
         }
-        if (c.currentDraw > 150) {
-          faults.push(`- **${c.name} (${c.id})** [CURRENT OVERFLOW]: Excessive draw of ${c.currentDraw.toFixed(1)} A exceeds rated bus threshold. **Remedy:** Reduce throttle or engage load shedder.`);
+        if (c.cableConnected && (c.currentDraw || 0) > (c.maxCurrent || 100)) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: "Overcurrent Overflow Hazard",
+            severity: "CRITICAL",
+            metrics: `Current: ${(c.currentDraw || 0).toFixed(1)} A (Max: ${c.maxCurrent || 100} A)`,
+            solution: "Step down branch power supply regulator and shed non-essential loads.",
+          });
         }
-        if (c.temperature > 85) {
-          faults.push(`- **${c.name} (${c.id})** [CRITICAL OVERHEATING]: Core temperature at ${c.temperature.toFixed(1)}°C exceeds threshold. **Remedy:** Boost cryogenic coolant pump circulation.`);
+        if ((c.temperature || 0) > (c.tempThreshold || 75)) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: "Thermal Runaway / Overheating",
+            severity: (c.temperature || 0) >= (c.tempMax || 95) ? "CRITICAL" : "HIGH",
+            metrics: `Core Temp: ${(c.temperature || 0).toFixed(1)}°C (Limit: ${c.tempThreshold || 75}°C)`,
+            solution: "Cycle cryogenic coolant circulation pump and open radiative heat louvers.",
+          });
         }
-        if (c.leakageCurrent > 25) {
-          faults.push(`- **${c.name} (${c.id})** [CHASSIS GROUND LEAKAGE]: Ground fault current of ${c.leakageCurrent.toFixed(1)} mA escaping to hull. **Remedy:** Inspect harness insulation and restore chassis grounding.`);
+        if ((c.leakageCurrent || 0) > 20) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: "Chassis Ground Fault Leakage",
+            severity: (c.leakageCurrent || 0) > 50 ? "CRITICAL" : "HIGH",
+            metrics: `Leakage: ${(c.leakageCurrent || 0).toFixed(1)} mA (Max Safe: 20.0 mA)`,
+            solution: "Isolate circuit branch, inspect umbilical insulation, and spray dielectric sealant.",
+          });
         }
-        if (c.shortCircuitRisk >= 60) {
-          faults.push(`- **${c.name} (${c.id})** [HIGH SHORT CIRCUIT RISK]: Hazard probability calculated at ${c.shortCircuitRisk}%. **Remedy:** Isolate redundant branch before contact arc flash occurs.`);
+        if ((c.shortCircuitRisk || 0) >= 45) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: "Short Circuit Arc Hazard",
+            severity: (c.shortCircuitRisk || 0) >= 75 ? "CRITICAL" : "HIGH",
+            metrics: `Arc Risk Index: ${c.shortCircuitRisk}%`,
+            solution: "De-energize high-voltage tap and replace degraded dielectric separation barrier.",
+          });
         }
       });
 
       if (faults.length > 0) {
-        reply = `### ⚠️ Active Faults & Risk Manifest\n\n` +
-          `The Aegis telemetry engine detected **${faults.length} active issue(s)** configured in the spacecraft grid:\n\n` +
-          faults.join("\n\n") +
-          `\n\n*Execute corrective actions directly using the interactive Admin Deck or automated remediation.*`;
+        reply =
+          `### 📋 4. Spacecraft Faults & Diagnostic Risks Manifest\n\n` +
+          `⚠️ **Active Anomalies Detected Across Chambers (${faults.length} Fault Condition${faults.length > 1 ? "s" : ""}):**\n\n` +
+          faults
+            .map(
+              (f, i) =>
+                `**${i + 1}. ${f.chamber} (${f.id}) — [${f.severity}]**\n` +
+                `- **Anomaly Category:** ${f.type}\n` +
+                `- **Telemetry Reading:** ${f.metrics}\n` +
+                `- **Engineering Action:** ${f.solution}`
+            )
+            .join("\n\n");
       } else {
-        reply = `### ✅ Spacecraft Electrical Grid Status\n\n` +
-          `**No faults detected in the system. All components are working good!**\n\n` +
-          `• **All Cable Umbilicals:** Connected & securely locked\n` +
-          `• **Current Flow:** Nominal across all 8 machinery nodes\n` +
-          `• **Ground Isolation:** No leakage detected (< 5 mA safe baseline)\n` +
-          `• **Thermal Profiles:** All components within safe thermal envelopes\n` +
-          `• **Short Circuit Risks:** Nominal (< 15%)`;
+        reply =
+          `### 📋 4. Spacecraft Faults & Diagnostic Risks Manifest\n\n` +
+          `### ✅ No faults detected in the system. All chambers are working good!\n\n` +
+          `**Comprehensive Systems Nominal Verification:**\n` +
+          `• **Cable Umbilicals:** All 8 chamber umbilical cables are securely locked and conducting nominal current.\n` +
+          `• **Current Draw:** All machinery current flows are within rated operating envelopes.\n` +
+          `• **Thermal Balance:** All chamber core temperatures are well below safety thresholds.\n` +
+          `• **Dielectric Isolation:** Zero chassis leakage detected (<5.0 mA baseline across all nodes).\n` +
+          `• **Short Circuit Risk:** Arc probability minimal (<10% nominal margin).`;
       }
     }
 
@@ -536,7 +585,25 @@ Format your response clearly using markdown with bold headings and bullet points
             `- **Short Circuit Risk:** ${targetComp.shortCircuitRisk}% (Low)`;
         }
       } else {
-        reply = `Aegis Diagnostic AI online. Choose from the recommended inquiries above (Top Power Consumer, Current Leakage, High Temperature, or Faults & Risks List), or select a specific component to run a dedicated diagnostic audit.`;
+        const generalPrompt = `You are AURA, the aerospace diagnostic engineer for spacecraft NCC-74656.
+Current spacecraft system status:
+${JSON.stringify(systemState, null, 2)}
+
+User question: "${message}"
+
+Answer the user's query clearly and concisely based on the live spacecraft telemetry. If it relates to power, leakage, temperature, or faults, refer to those telemetry findings.`;
+
+        const geminiResult = await safeGeminiGenerate(generalPrompt);
+        if (geminiResult && geminiResult.text) {
+          reply = geminiResult.text;
+        } else {
+          reply = `### 🛡️ AURA Spacecraft Diagnostic Telemetry Engine\n\n` +
+            `Please select or ask about any of the 4 diagnostic domains:\n` +
+            `1. **Power / Consumption**: Inquire about which chamber consumes more power.\n` +
+            `2. **Current / Leakage**: Inquire about chassis ground fault leakage.\n` +
+            `3. **High / Temperature**: Inquire about thermal overheating chambers.\n` +
+            `4. **Risk / Faults / List**: Inquire about the complete active faults and risks manifest.`;
+        }
       }
     }
 
@@ -619,6 +686,165 @@ Ready for Orbital Operations.`;
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Report generation failed" });
   }
+});
+
+// ==========================================
+// ROLE-BASED ACCESS CONTROL (RBAC) API
+// OWASP Enforcement: Server-side authorization check with default-deny
+// ==========================================
+import { memoryStore, logAuditEvent, UserRole } from "./server/rbacStore.js";
+
+// Helper middleware to extract user role
+function getUserRole(req: express.Request): UserRole {
+  const roleHeader = req.headers["x-user-role"] as string;
+  const validRoles: UserRole[] = ["VIEWER", "ENGINEER", "SENIOR_ENGINEER", "ADMIN", "SECURITY_ADMIN"];
+  if (roleHeader && validRoles.includes(roleHeader as UserRole)) {
+    return roleHeader as UserRole;
+  }
+  // Default deny: if no valid role provided, treat as unauthenticated/viewer
+  return "VIEWER";
+}
+
+// 1. RBAC Investigate Chamber (Engineer, Senior Engineer, Admin)
+app.post("/api/rbac/investigate/:chamberId", (req, res) => {
+  const role = getUserRole(req);
+  const { chamberId } = req.params;
+
+  // Check permission: Engineer, Senior Engineer, Admin
+  if (role === "ENGINEER" || role === "SENIOR_ENGINEER" || role === "ADMIN") {
+    logAuditEvent(role, "INVESTIGATE_CHAMBER", chamberId, "ALLOWED", `Authorized to investigate telemetry on ${chamberId}`);
+    return res.json({ allowed: true, chamberId, role });
+  }
+
+  // Deny (Viewer, Security Admin without engineer credentials)
+  logAuditEvent(role, "INVESTIGATE_CHAMBER", chamberId, "DENIED", `Blocked: ${role} lacks investigation permissions`);
+  return res.status(403).json({
+    allowed: false,
+    error: `Access Denied: Role '${role}' cannot investigate components. Engineer role required.`,
+  });
+});
+
+// 2. RBAC Approve Recommendation (Senior Engineer, Admin)
+app.post("/api/rbac/approve-recommendation", (req, res) => {
+  const role = getUserRole(req);
+  const { recommendationId, actionName } = req.body;
+
+  if (role === "SENIOR_ENGINEER" || role === "ADMIN") {
+    if (recommendationId && !memoryStore.approvedRecommendations.includes(recommendationId)) {
+      memoryStore.approvedRecommendations.push(recommendationId);
+    }
+    logAuditEvent(
+      role,
+      "APPROVE_RECOMMENDATION",
+      actionName || recommendationId || "System Fix",
+      "ALLOWED",
+      `Approved recommendation action: ${actionName || recommendationId}`
+    );
+    return res.json({ allowed: true, success: true, approvedBy: role });
+  }
+
+  logAuditEvent(
+    role,
+    "APPROVE_RECOMMENDATION",
+    actionName || recommendationId || "System Fix",
+    "DENIED",
+    `Blocked: Role '${role}' cannot approve recommendations. Senior Engineer required.`
+  );
+  return res.status(403).json({
+    allowed: false,
+    error: `Access Denied: Role '${role}' cannot approve recommendations. Senior Engineer role required.`,
+  });
+});
+
+// 3. RBAC Manage Users (Admin only)
+app.get("/api/rbac/users", (req, res) => {
+  const role = getUserRole(req);
+  if (role === "ADMIN") {
+    logAuditEvent(role, "LIST_USERS", "User Registry", "ALLOWED", "Admin inspected user directory");
+    return res.json({ users: memoryStore.users });
+  }
+
+  logAuditEvent(role, "LIST_USERS", "User Registry", "DENIED", `Blocked: ${role} cannot manage users`);
+  return res.status(403).json({
+    error: `Access Denied: Administrator role required to manage users.`,
+  });
+});
+
+app.post("/api/rbac/users", (req, res) => {
+  const role = getUserRole(req);
+  if (role !== "ADMIN") {
+    logAuditEvent(role, "ADD_USER", "User Registry", "DENIED", `Blocked: ${role} tried to add a user`);
+    return res.status(403).json({ error: "Access Denied: Administrator role required." });
+  }
+
+  const { name, email, role: newUserRole } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: "Name and email required" });
+  }
+
+  const newUser = {
+    id: `usr-${Date.now()}`,
+    name,
+    email,
+    role: newUserRole || "ENGINEER",
+    status: "ACTIVE" as const,
+  };
+  memoryStore.users.push(newUser);
+  logAuditEvent(role, "ADD_USER", newUser.name, "ALLOWED", `Created user ${name} with role ${newUser.role}`);
+  return res.json({ user: newUser });
+});
+
+app.patch("/api/rbac/users/:id", (req, res) => {
+  const role = getUserRole(req);
+  if (role !== "ADMIN") {
+    logAuditEvent(role, "UPDATE_USER", req.params.id, "DENIED", `Blocked: ${role} tried to update a user`);
+    return res.status(403).json({ error: "Access Denied: Administrator role required." });
+  }
+
+  const user = memoryStore.users.find((u) => u.id === req.params.id);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  if (req.body.role) {
+    user.role = req.body.role;
+  }
+  if (req.body.status) {
+    user.status = req.body.status;
+  }
+
+  logAuditEvent(role, "UPDATE_USER", user.name, "ALLOWED", `Updated user role to ${user.role}`);
+  return res.json({ user });
+});
+
+app.delete("/api/rbac/users/:id", (req, res) => {
+  const role = getUserRole(req);
+  if (role !== "ADMIN") {
+    logAuditEvent(role, "DELETE_USER", req.params.id, "DENIED", `Blocked: ${role} tried to remove a user`);
+    return res.status(403).json({ error: "Access Denied: Administrator role required." });
+  }
+
+  const idx = memoryStore.users.findIndex((u) => u.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  const removed = memoryStore.users.splice(idx, 1)[0];
+  logAuditEvent(role, "DELETE_USER", removed.name, "ALLOWED", `Removed user ${removed.name}`);
+  return res.json({ success: true, user: removed });
+});
+
+// 4. RBAC Audit Logs (Security Admin & Admin)
+app.get("/api/rbac/audit-logs", (req, res) => {
+  const role = getUserRole(req);
+  if (role === "SECURITY_ADMIN" || role === "ADMIN") {
+    logAuditEvent(role, "VIEW_AUDIT_LOGS", "Audit Stream", "ALLOWED", "Inspected server security logs");
+    return res.json({ logs: memoryStore.auditLogs });
+  }
+
+  logAuditEvent(role, "VIEW_AUDIT_LOGS", "Audit Stream", "DENIED", `Blocked: ${role} cannot view security logs`);
+  return res.status(403).json({
+    error: `Access Denied: Security Admin role required to inspect audit logs.`,
+  });
 });
 
 // Vite Middleware for Development & Static Serving for Production

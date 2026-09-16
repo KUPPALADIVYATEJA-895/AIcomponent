@@ -10,7 +10,6 @@ import {
   Zap,
   Flame,
   ShieldAlert,
-  Sliders,
   CheckCircle2,
   AlertTriangle,
   Radio,
@@ -41,13 +40,12 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
     {
       id: 'welcome',
       sender: 'ai',
-      text: '### 🛡️ AURA Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft chambers (Chamber A through Chamber H).\n\nSelect an inquiry from the **Recommended Inquiries** below or tap any chamber to diagnose its status.',
+      text: '### 🛡️ AURA Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft chambers (Chamber A through Chamber H).\n\nSelect an inquiry from the **Diagnostic Inquiries** below to diagnose spacecraft status.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedComponentId, setSelectedComponentId] = useState<string>('');
 
   const [isOptionsCollapsed, setIsOptionsCollapsed] = useState(false);
 
@@ -64,12 +62,216 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
       {
         id: `welcome-${Date.now()}`,
         sender: 'ai',
-        text: '### 🛡️ AURA Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft chambers (Chamber A through Chamber H).\n\nSelect an inquiry from the **Recommended Inquiries** below or tap any chamber to diagnose its status.',
+        text: '### 🛡️ AURA Telemetry & Diagnostic AI Online\nI am continuously monitoring real-time cable connections, current flow, thermal dissipation, chassis leakage, and short-circuit risk indices across all 8 spacecraft chambers (Chamber A through Chamber H).\n\nSelect an inquiry from the **Diagnostic Inquiries** below to diagnose spacecraft status.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
-    setSelectedComponentId('');
     setInput('');
+  };
+
+  const generateLocalDomainReply = (rawMsg: string, comps: SpacecraftComponent[]): string => {
+    const msg = rawMsg.toLowerCase();
+
+    // 1. Power / Consume -> 1st Data
+    if (msg.includes('power') || msg.includes('consume') || msg.includes('consumption')) {
+      const sorted = [...comps].sort(
+        (a, b) => (b.cableConnected ? b.currentDraw || 0 : 0) - (a.cableConnected ? a.currentDraw || 0 : 0)
+      );
+      const top = sorted[0];
+      const totalAmps = comps.reduce((sum, c) => sum + (c.cableConnected ? c.currentDraw || 0 : 0), 0);
+      const totalKw = (totalAmps * 480) / 1000;
+      const topKw = top && top.cableConnected ? (((top.currentDraw || 0) * 480) / 1000).toFixed(2) : '0.00';
+      const share = totalAmps > 0 && top && top.cableConnected ? (((top.currentDraw || 0) / totalAmps) * 100).toFixed(1) : '0.0';
+
+      return (
+        `### ⚡ 1. Top Power Consumer & Grid Load Audit\n\n` +
+        (top && top.cableConnected && top.currentDraw > 0
+          ? `**Primary Power Consumer:** **${top.name} (${top.id})**\n` +
+            `- **Current Draw:** **${top.currentDraw.toFixed(1)} A** (Nominal: ${top.nominalCurrent} A | Max: ${top.maxCurrent} A)\n` +
+            `- **Power Consumption:** **${topKw} kW** (${share}% of aggregate 480V DC grid load)\n` +
+            `- **Operational Status:** ${top.currentDraw > top.maxCurrent ? '🚨 OVERCURRENT HAZARD' : top.status}\n` +
+            `- **Core Temperature:** ${top.temperature.toFixed(1)}°C\n\n`
+          : `**Status:** All chambers are currently de-energized or disconnected from the 480V DC main bus.\n\n`) +
+        `**Spacecraft Machinery Power Consumption Ranking:**\n` +
+        sorted
+          .map((c, i) => {
+            const kw = c.cableConnected ? (((c.currentDraw || 0) * 480) / 1000).toFixed(2) : '0.00';
+            const pct = totalAmps > 0 && c.cableConnected ? (((c.currentDraw || 0) / totalAmps) * 100).toFixed(1) : '0.0';
+            const note = !c.cableConnected ? ' [DISCONNECTED / 0A]' : c.currentDraw > c.maxCurrent ? ' [OVERLOAD]' : '';
+            return `${i + 1}. **${c.name}**: **${c.cableConnected ? c.currentDraw.toFixed(1) : '0.0'} A** (${kw} kW, ${pct}% load)${note}`;
+          })
+          .join('\n') +
+        `\n\n**Aggregate Bus Telemetry:** **${totalAmps.toFixed(1)} A** across all nodes (**${totalKw.toFixed(2)} kW** total dissipation).`
+      );
+    }
+
+    // 2. Current / Leakage / Leakge -> 2nd Data
+    if (msg.includes('leakage') || msg.includes('leakge') || msg.includes('leak') || msg.includes('current')) {
+      const leaking = comps.filter((c) => (c.leakageCurrent || 0) > 20);
+      if (leaking.length > 0) {
+        return (
+          `### 🧲 2. Chassis Current Leakage & Ground Isolation Audit\n\n` +
+          `🚨 **Active Chassis Ground Faults Detected (${leaking.length} Chamber${leaking.length > 1 ? 's' : ''}):**\n\n` +
+          leaking
+            .map(
+              (c) =>
+                `#### **${c.name} (${c.id})**\n` +
+                `- **Leakage Current:** **${c.leakageCurrent.toFixed(1)} mA** to titanium chassis (Safety Limit: 20.0 mA)\n` +
+                `- **Short Circuit Risk Index:** **${c.shortCircuitRisk || 0}%**\n` +
+                `- **Hazard Level:** ${(c.leakageCurrent || 0) > 50 ? 'CRITICAL - High Arc Flash / Shock Hazard' : 'ELEVATED - Dielectric Breakdown'}\n` +
+                `- **Underlying Cause:** Micro-fractures or moisture condensation bridging conductor insulation to titanium chassis frame.\n` +
+                `- **Prescribed Engineering Solution:** Engage branch galvanic isolation relay, deploy aeroshell dielectric sealant to terminal blocks, and reset chassis ground fault detector.`
+            )
+            .join('\n\n') +
+          `\n\n**Chassis Leakage Across All Spacecraft Chambers:**\n` +
+          comps
+            .map((c) => `- **${c.name}**: **${(c.leakageCurrent || 0).toFixed(1)} mA** ${(c.leakageCurrent || 0) > 20 ? '⚠️ [ELEVATED GROUND FAULT]' : '✓ (Insulation Intact)'}`)
+            .join('\n')
+        );
+      }
+      return (
+        `### 🧲 2. Chassis Current Leakage & Ground Isolation Audit\n\n` +
+        `✅ **No abnormal current leakage detected.**\n\n` +
+        `All spacecraft component dielectric insulation barriers are intact and operating within aerospace safety parameters. Monitored chassis leakage across all 8 chambers remains below the 20.0 mA safety threshold (nominal baseline < 5.0 mA). No ground fault remediation is required.\n\n` +
+        `**Monitored Chassis Leakage Across All Chambers:**\n` +
+        comps
+          .map((c) => `- **${c.name}**: **${(c.leakageCurrent || 0).toFixed(1)} mA** ✓ (Insulation Intact)`)
+          .join('\n')
+      );
+    }
+
+    // 3. High / Temperature -> 3rd Data
+    if (msg.includes('high') || msg.includes('temperature') || msg.includes('temp') || msg.includes('thermal') || msg.includes('hot')) {
+      const hot = comps.filter((c) => (c.temperature || 0) > (c.tempThreshold || 75) || c.status === 'CRITICAL' || c.status === 'WARNING');
+      const sortedTemps = [...comps].sort((a, b) => (b.temperature || 0) - (a.temperature || 0));
+
+      if (hot.length > 0) {
+        return (
+          `### 🌡️ 3. High Temperature & Thermal Dissipation Audit\n\n` +
+          `🔥 **Chambers Operating Above Safe Thermal Thresholds (${hot.length} Chamber${hot.length > 1 ? 's' : ''}):**\n\n` +
+          hot
+            .map((c) => {
+              const threshold = c.tempThreshold || 75;
+              const delta = (c.temperature || 0) - threshold;
+              return (
+                `#### **${c.name} (${c.id})**\n` +
+                `- **Current Core Temperature:** **${(c.temperature || 0).toFixed(1)}°C** (Rated Limit: ${threshold}°C | Delta: +${delta.toFixed(1)}°C)\n` +
+                `- **Thermal Status:** ${(c.temperature || 0) >= (c.tempMax || 95) ? '🚨 CRITICAL (Max Temp Exceeded)' : '⚠️ WARNING (Thermal Throttle Required)'}\n` +
+                `- **Active Current Load:** ${(c.currentDraw || 0).toFixed(1)} A\n` +
+                `- **Underlying Cause:** Resistive Joule heating under sustained load or insufficient cryogenic heat-sink flow.\n` +
+                `- **Prescribed Solution:** Throttle power duty cycle or cycle auxiliary Cryogenic Coolant Distribution Pump to restore nominal 45°C–65°C equilibrium.`
+              );
+            })
+            .join('\n\n') +
+          `\n\n**Chamber Thermal Readings (Highest to Lowest):**\n` +
+          sortedTemps
+            .map((c) => `- **${c.name}**: **${(c.temperature || 0).toFixed(1)}°C** / Limit ${c.tempThreshold || 75}°C ${(c.temperature || 0) > (c.tempThreshold || 75) ? '🔥 [OVERHEATING]' : '✓ [NOMINAL]'}`)
+            .join('\n')
+        );
+      }
+      return (
+        `### 🌡️ 3. High Temperature & Thermal Dissipation Audit\n\n` +
+        `✅ **All spacecraft chambers are operating in safe thermal equilibrium.**\n\n` +
+        `No machinery node exceeds thermal threshold boundaries. All component core temperatures are operating normally between 40°C and 72°C. Cryogenic heat sinks and passive radiators are dissipating nominal thermal output.\n\n` +
+        `**Chamber Thermal Readings:**\n` +
+        sortedTemps
+          .map((c) => `- **${c.name}**: **${(c.temperature || 0).toFixed(1)}°C** ✓ [NOMINAL]`)
+          .join('\n')
+      );
+    }
+
+    // 4. Risk / Faults / Fault / List -> 4th Data
+    if (msg.includes('risk') || msg.includes('fault') || msg.includes('faults') || msg.includes('list')) {
+      const faults: Array<{ chamber: string; id: string; type: string; severity: string; metrics: string; solution: string }> = [];
+
+      comps.forEach((c) => {
+        if (!c.cableConnected) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: 'Open Circuit / Cable Umbilical Disconnect',
+            severity: 'CRITICAL',
+            metrics: 'Current Flow: 0.0 A (Blackout)',
+            solution: 'Re-engage umbilical quick-lock collar and verify pin engagement.',
+          });
+        }
+        if (c.cableConnected && (c.currentDraw || 0) > (c.maxCurrent || 100)) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: 'Overcurrent Overflow Hazard',
+            severity: 'CRITICAL',
+            metrics: `Current: ${(c.currentDraw || 0).toFixed(1)} A (Max: ${c.maxCurrent || 100} A)`,
+            solution: 'Step down branch power supply regulator and shed non-essential loads.',
+          });
+        }
+        if ((c.temperature || 0) > (c.tempThreshold || 75)) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: 'Thermal Runaway / Overheating',
+            severity: (c.temperature || 0) >= (c.tempMax || 95) ? 'CRITICAL' : 'HIGH',
+            metrics: `Core Temp: ${(c.temperature || 0).toFixed(1)}°C (Limit: ${c.tempThreshold || 75}°C)`,
+            solution: 'Cycle cryogenic coolant circulation pump and open radiative heat louvers.',
+          });
+        }
+        if ((c.leakageCurrent || 0) > 20) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: 'Chassis Ground Fault Leakage',
+            severity: (c.leakageCurrent || 0) > 50 ? 'CRITICAL' : 'HIGH',
+            metrics: `Leakage: ${(c.leakageCurrent || 0).toFixed(1)} mA (Max Safe: 20.0 mA)`,
+            solution: 'Isolate circuit branch, inspect umbilical insulation, and spray dielectric sealant.',
+          });
+        }
+        if ((c.shortCircuitRisk || 0) >= 45) {
+          faults.push({
+            chamber: c.name,
+            id: c.id,
+            type: 'Short Circuit Arc Hazard',
+            severity: (c.shortCircuitRisk || 0) >= 75 ? 'CRITICAL' : 'HIGH',
+            metrics: `Arc Risk Index: ${c.shortCircuitRisk}%`,
+            solution: 'De-energize high-voltage tap and replace degraded dielectric separation barrier.',
+          });
+        }
+      });
+
+      if (faults.length > 0) {
+        return (
+          `### 📋 4. Spacecraft Faults & Diagnostic Risks Manifest\n\n` +
+          `⚠️ **Active Anomalies Detected Across Chambers (${faults.length} Fault Condition${faults.length > 1 ? 's' : ''}):**\n\n` +
+          faults
+            .map(
+              (f, i) =>
+                `**${i + 1}. ${f.chamber} (${f.id}) — [${f.severity}]**\n` +
+                `- **Anomaly Category:** ${f.type}\n` +
+                `- **Telemetry Reading:** ${f.metrics}\n` +
+                `- **Engineering Action:** ${f.solution}`
+            )
+            .join('\n\n')
+        );
+      }
+      return (
+        `### 📋 4. Spacecraft Faults & Diagnostic Risks Manifest\n\n` +
+        `### ✅ No faults detected in the system. All chambers are working good!\n\n` +
+        `**Comprehensive Systems Nominal Verification:**\n` +
+        `• **Cable Umbilicals:** All 8 chamber umbilical cables are securely locked and conducting nominal current.\n` +
+        `• **Current Draw:** All machinery current flows are within rated operating envelopes.\n` +
+        `• **Thermal Balance:** All chamber core temperatures are well below safety thresholds.\n` +
+        `• **Dielectric Isolation:** Zero chassis leakage detected (<5.0 mA baseline across all nodes).\n` +
+        `• **Short Circuit Risk:** Arc probability minimal (<10% nominal margin).`
+      );
+    }
+
+    return (
+      `### 🛡️ AURA Spacecraft Diagnostic Telemetry Engine\n\n` +
+      `Please select or ask about any of the 4 diagnostic domains:\n` +
+      `1. **Power / Consumption**: Inquire about which chamber consumes more power.\n` +
+      `2. **Current / Leakage**: Inquire about chassis ground fault leakage.\n` +
+      `3. **High / Temperature**: Inquire about thermal overheating chambers.\n` +
+      `4. **Risk / Faults / List**: Inquire about the complete active faults and risks manifest.`
+    );
   };
 
   const handleSend = async (textToSend?: string) => {
@@ -110,32 +312,33 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
         }),
       });
 
+      if (!res.ok) {
+        throw new Error('Server error');
+      }
+
       const data = await res.json();
       const aiMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: data.reply || 'Analysis completed.',
+        text: data.reply || generateLocalDomainReply(query, components),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
+      // Fallback directly to the exact diagnostic rule engine matching the 4 domains
+      const localReply = generateLocalDomainReply(query, components);
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: 'ai',
-          text: '⚠️ Telemetry link interrupted. Re-establishing secure datalink with the onboard primary avionics bus.',
+          text: localReply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCheckParticularComponent = (comp: SpacecraftComponent) => {
-    setSelectedComponentId(comp.id);
-    handleSend(`Is there any fault occurring in ${comp.name}?`);
   };
 
   const recommendationOptions = [
@@ -191,14 +394,14 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-100 tracking-tight">
-                FLIGHT ENGINEER ASSISTANT
+                AURA BOT
               </h3>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#1a2336] text-slate-300 border border-[#2c384c]">
                 ACTIVE TELEMETRY
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Telemetry engineering assistant & chamber fault analysis console
+              Autonomous reliability BOT & chamber fault analysis console
             </p>
           </div>
         </div>
@@ -221,7 +424,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             id="btn-close-ai-chat"
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-[#1b2332] rounded-lg transition-colors"
-            title="Close Assistant"
+            title="Close BOT"
           >
             <X className="w-5 h-5" />
           </button>
@@ -251,96 +454,48 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                 Diagnostic Inquiries
               </span>
               <span className="text-[10px] font-mono text-slate-500">
-                {isOptionsCollapsed ? '(tap to expand)' : '(inquiries & chambers)'}
+                {isOptionsCollapsed ? '(tap to expand)' : '(diagnostic inquiries)'}
               </span>
             </div>
           </button>
 
           <span className="text-[10px] font-mono text-slate-500">
-            {isOptionsCollapsed ? `${components.length} modules` : 'Tap to diagnose'}
+            {isOptionsCollapsed ? 'Tap to expand' : 'Quick audit'}
           </span>
         </div>
 
         {/* Expandable / Collapsible Options Content */}
         {!isOptionsCollapsed && (
-          <div className="p-3 pt-0 space-y-3">
-            <div>
-              {/* 4 Core Inquiries */}
-              <div className="grid grid-cols-2 gap-1.5">
-                {recommendationOptions.map((opt) => {
-                  const Icon = opt.icon;
-                  return (
-                    <button
-                      key={opt.id}
-                      id={opt.id}
-                      onClick={() => handleSend(opt.query)}
-                      disabled={isLoading}
-                      className="p-2 rounded-lg bg-[#161d2b] border border-[#232f42] hover:border-blue-500 text-left transition-colors group relative overflow-hidden flex flex-col justify-between"
-                    >
-                      <div className="flex items-center justify-between w-full mb-1">
-                        <span className="p-1 rounded bg-[#131926] text-blue-400 group-hover:text-blue-300 transition-colors">
-                          <Icon className="w-3.5 h-3.5" />
-                        </span>
-                        <span className="text-[9px] font-mono text-slate-500 group-hover:text-slate-400">
-                          {opt.badge}
-                        </span>
-                      </div>
-                      <div className="text-xs font-semibold text-slate-200 group-hover:text-blue-300 leading-tight">
-                        {opt.label}
-                      </div>
-                      <div className="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-                        {opt.desc}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Particular Component Selector */}
-            <div className="pt-2 border-t border-[#232f42]">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-blue-400" />
-                  Check Particular Chamber
-                </span>
-                <span className="text-[10px] font-mono text-slate-500">Tap to audit module</span>
-              </div>
-
-              <div className="grid grid-cols-4 gap-1">
-                {components.map((c) => {
-                  const hasFault =
-                    !c.cableConnected ||
-                    c.currentDraw > c.maxCurrent ||
-                    c.temperature > c.tempThreshold ||
-                    c.leakageCurrent > 20 ||
-                    c.shortCircuitRisk >= 60;
-
-                  return (
-                    <button
-                      key={c.id}
-                      id={`btn-check-comp-${c.id}`}
-                      onClick={() => handleCheckParticularComponent(c)}
-                      disabled={isLoading}
-                      title={`Click to check ${c.name} for faults`}
-                      className={`p-1.5 rounded text-left border transition-colors ${
-                        selectedComponentId === c.id
-                          ? 'bg-[#1a2436] border-blue-500 text-blue-200 ring-1 ring-blue-500/50'
-                          : 'bg-[#161d2b] hover:bg-[#1e2838] border-[#232f42] hover:border-[#2a374b] text-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="text-[10px] font-mono font-bold text-slate-200">{c.name}</span>
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            hasFault ? 'bg-rose-500 animate-pulse' : 'bg-emerald-400'
-                          }`}
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="p-3 pt-0">
+            {/* 4 Core Inquiries */}
+            <div className="grid grid-cols-2 gap-1.5">
+              {recommendationOptions.map((opt) => {
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.id}
+                    id={opt.id}
+                    onClick={() => handleSend(opt.query)}
+                    disabled={isLoading}
+                    className="p-2 rounded-lg bg-[#161d2b] border border-[#232f42] hover:border-blue-500 text-left transition-colors group relative overflow-hidden flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <span className="p-1 rounded bg-[#131926] text-blue-400 group-hover:text-blue-300 transition-colors">
+                        <Icon className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-500 group-hover:text-slate-400">
+                        {opt.badge}
+                      </span>
+                    </div>
+                    <div className="text-xs font-semibold text-slate-200 group-hover:text-blue-300 leading-tight">
+                      {opt.label}
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
+                      {opt.desc}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

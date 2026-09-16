@@ -1,3 +1,5 @@
+export type AppTheme = 'industrial-studio' | 'mission-control' | 'tactical-hazard';
+
 export type ComponentCategory =
   | 'POWER'
   | 'PROPULSION'

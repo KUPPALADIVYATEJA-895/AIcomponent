@@ -46,13 +46,7 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
               <h2 className="text-base font-bold text-slate-100 tracking-tight">
                 ELECTRICAL DIAGNOSTIC & TELEMETRY ENGINE
               </h2>
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-[#1a2336] text-slate-300 border border-[#2c384c]">
-                {diagnosis.source === 'gemini-3.8-flash' ? 'GEMINI 3.8-FLASH LIVE' : 'AEROSPACE DIAGNOSTIC CORE'}
-              </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Autonomous telemetry reasoning, failure root cause attribution, and resolution roadmap.
-            </p>
           </div>
         </div>
 
@@ -171,30 +165,6 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
             ) : (
               <CheckCircle2 className="w-5 h-5" />
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* AI Analysis Cards */}
-      <div className="mb-4">
-        {/* Root Cause Summary & Short Circuit Analysis */}
-        <div className="bg-[#0f141f] border border-[#1e2838] rounded-lg p-4 space-y-3">
-          <div>
-            <span className="text-xs font-mono text-blue-400 font-semibold block mb-1 uppercase tracking-wider">
-              1. Root Cause Attribution
-            </span>
-            <p className="text-xs text-slate-200 leading-relaxed bg-[#161d2b] p-3 rounded border border-[#232f42] font-sans">
-              {diagnosis.rootCauseSummary}
-            </p>
-          </div>
-
-          <div>
-            <span className="text-xs font-mono text-slate-300 font-semibold block mb-1 uppercase tracking-wider">
-              2. Dielectric & Short Circuit Risk Evaluation
-            </span>
-            <p className="text-xs text-slate-300 leading-relaxed bg-[#161d2b] p-3 rounded border border-[#232f42] font-sans">
-              {diagnosis.shortCircuitAnalysis}
-            </p>
           </div>
         </div>
       </div>

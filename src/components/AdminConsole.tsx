@@ -3,6 +3,9 @@ import {
   SpacecraftComponent,
   FaultPreset,
 } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import { useRbac } from '../context/RbacContext';
+import { ROLE_DEFINITIONS } from '../types/rbac';
 import {
   Sliders,
   Zap,
@@ -16,6 +19,8 @@ import {
   CheckCircle2,
   Gauge,
   Activity,
+  Lock,
+  X,
 } from 'lucide-react';
 
 interface AdminConsoleProps {
@@ -28,6 +33,7 @@ interface AdminConsoleProps {
   onResetAll: () => void;
   isSimulating: boolean;
   setIsSimulating: (val: boolean) => void;
+  onFaultTriggered?: (faultTitle: string) => void;
 }
 
 export const AdminConsole: React.FC<AdminConsoleProps> = ({
@@ -40,11 +46,48 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   onResetAll,
   isSimulating,
   setIsSimulating,
+  onFaultTriggered,
 }) => {
+  const { isIndustrial, isHazard } = useTheme();
+  const { currentRole, canInjectFaults } = useRbac();
+  const [activeFaultBanner, setActiveFaultBanner] = React.useState<string | null>(null);
+
+  // Check if any component in the spacecraft has an active anomaly/fault
+  const hasActiveFault = React.useMemo(() => {
+    return components.some(
+      (c) =>
+        c.status !== 'NOMINAL' ||
+        !c.cableConnected ||
+        c.currentDraw > c.maxCurrent ||
+        c.temperature > c.tempThreshold ||
+        c.leakageCurrent > 25 ||
+        c.shortCircuitRisk > 45
+    );
+  }, [components]);
+
+  // Once the fault is corrected/fixed, automatically clear and make the warning invisible
+  React.useEffect(() => {
+    if (!hasActiveFault && activeFaultBanner) {
+      setActiveFaultBanner(null);
+    }
+  }, [hasActiveFault, activeFaultBanner]);
+
   const selectedComp =
     components.find((c) => c.id === selectedComponentId) || components[0];
 
   if (!selectedComp) return null;
+
+  // Handle preset selection - guarantees alert/warning will be shown each time
+  const handleSelectPreset = (preset: FaultPreset) => {
+    onApplyPreset(preset);
+    if (preset.id !== 'nominal-restore') {
+      const faultMsg = `${preset.title} FAULT INJECTED`;
+      setActiveFaultBanner(faultMsg);
+      onFaultTriggered?.(preset.title);
+    } else {
+      setActiveFaultBanner(null);
+    }
+  };
 
   // Handle cable plug in/out
   const handleToggleCable = () => {
@@ -56,6 +99,14 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       shortCircuitRisk: nextConnected ? 5 : 0,
       status: nextConnected ? 'NOMINAL' : 'OFFLINE',
     });
+
+    if (!nextConnected) {
+      const faultMsg = `Cable disconnected on ${selectedComp.name}`;
+      setActiveFaultBanner(faultMsg);
+      onFaultTriggered?.(faultMsg);
+    } else {
+      setActiveFaultBanner(null);
+    }
   };
 
   // Handle temperature change
@@ -63,6 +114,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     onUpdateComponent(selectedComp.id, {
       temperature: Math.round(newTemp * 10) / 10,
     });
+    if (newTemp > selectedComp.tempThreshold) {
+      const faultMsg = `High temperature alert on ${selectedComp.name} (${newTemp.toFixed(1)}°C)`;
+      setActiveFaultBanner(faultMsg);
+      onFaultTriggered?.(faultMsg);
+    }
   };
 
   // Handle current overflow change
@@ -71,6 +127,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       currentDraw: Math.round(newCurrent * 10) / 10,
       cableConnected: true, // if admin adjusts current, cable is powered
     });
+    if (newCurrent > selectedComp.maxCurrent) {
+      const faultMsg = `Overcurrent overflow on ${selectedComp.name} (${newCurrent.toFixed(1)}A)`;
+      setActiveFaultBanner(faultMsg);
+      onFaultTriggered?.(faultMsg);
+    }
   };
 
   // Handle ground leakage change
@@ -78,6 +139,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     onUpdateComponent(selectedComp.id, {
       leakageCurrent: Math.round(newLeakage * 10) / 10,
     });
+    if (newLeakage > 20) {
+      const faultMsg = `Chassis ground fault on ${selectedComp.name} (${newLeakage.toFixed(1)} mA)`;
+      setActiveFaultBanner(faultMsg);
+      onFaultTriggered?.(faultMsg);
+    }
   };
 
   // Handle power consume / wattage adjustment (updates current according to P = V * I)
@@ -88,6 +154,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       currentDraw: Math.round(computedCurrent * 10) / 10,
       cableConnected: true,
     });
+    if (computedCurrent > selectedComp.maxCurrent) {
+      const faultMsg = `Excessive power consumption overload on ${selectedComp.name}`;
+      setActiveFaultBanner(faultMsg);
+      onFaultTriggered?.(faultMsg);
+    }
   };
 
   // Preset quick triggers
@@ -95,6 +166,9 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     onUpdateComponent(selectedComp.id, {
       temperature: selectedComp.tempMax + 15,
     });
+    const faultMsg = `Thermal spike fault on ${selectedComp.name}`;
+    setActiveFaultBanner(faultMsg);
+    onFaultTriggered?.(faultMsg);
   };
 
   const triggerOvercurrentSurge = () => {
@@ -102,12 +176,18 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       currentDraw: Math.round(selectedComp.maxCurrent * 1.35),
       cableConnected: true,
     });
+    const faultMsg = `Overcurrent surge fault on ${selectedComp.name}`;
+    setActiveFaultBanner(faultMsg);
+    onFaultTriggered?.(faultMsg);
   };
 
   const triggerSevereLeakage = () => {
     onUpdateComponent(selectedComp.id, {
       leakageCurrent: 88.5,
     });
+    const faultMsg = `Severe chassis ground leakage on ${selectedComp.name}`;
+    setActiveFaultBanner(faultMsg);
+    onFaultTriggered?.(faultMsg);
   };
 
   const restoreComponent = () => {
@@ -119,6 +199,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       shortCircuitRisk: 6,
       status: 'NOMINAL',
     });
+    setActiveFaultBanner(null);
   };
 
   return (
@@ -137,40 +218,31 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               <h2 className="text-base font-bold text-slate-100 tracking-tight">
                 FAULT INJECTION & SIMULATOR CONSOLE
               </h2>
-              <span className="px-2 py-0.5 text-xs font-mono font-medium rounded bg-[#1a2334] text-slate-300 border border-[#2c3b54]">
-                HARDWARE CONTROLS
+              <span
+                className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                  canInjectFaults
+                    ? 'bg-emerald-950/70 border-emerald-700 text-emerald-300'
+                    : 'bg-amber-950/70 border-amber-700 text-amber-300'
+                }`}
+              >
+                {canInjectFaults ? 'CONTROLS ACTIVE' : 'VIEW-ONLY ACCESS'}
               </span>
             </div>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            id="btn-toggle-live-simulation"
-            onClick={() => setIsSimulating(!isSimulating)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors flex items-center gap-1.5 border ${
-              isSimulating
-                ? 'bg-emerald-950/40 border-emerald-600/40 text-emerald-300 hover:bg-emerald-900/40'
-                : 'bg-amber-950/40 border-amber-600/40 text-amber-300 hover:bg-amber-900/40'
-            }`}
-          >
-            <Radio className={`w-3.5 h-3.5 ${isSimulating ? 'text-emerald-400' : 'text-amber-400'}`} />
-            {isSimulating ? 'TELEMETRY: RUNNING' : 'TELEMETRY: PAUSED'}
-          </button>
-
-          <button
-            id="btn-admin-reset-all"
-            onClick={onResetAll}
-            className="px-3 py-1.5 bg-[#182030] hover:bg-[#202b40] border border-[#263348] text-slate-200 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-            RESET TO NOMINAL
-          </button>
-        </div>
       </div>
 
+      {!canInjectFaults && (
+        <div className="mb-4 p-3 rounded-lg bg-amber-950/40 border border-amber-800/70 text-amber-200 flex items-center gap-2.5 text-xs font-mono">
+          <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>
+            Current role is <strong>{ROLE_DEFINITIONS[currentRole].label}</strong>. Fault injection requires <strong>Engineer</strong> or <strong>Admin</strong> access.
+          </span>
+        </div>
+      )}
+
       {/* Demonstrations: DISCONNECT CABLE, SHORT CIRCUIT, CURRENT OVERFLOW, POWER CUT, TEMPEARTURE, RESET */}
-      <div className="mb-5">
+      <div className="mb-4">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {presets.map((preset) => {
             const isNominal = preset.id === 'nominal-restore';
@@ -178,11 +250,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               <button
                 key={preset.id}
                 id={`preset-${preset.id}`}
-                onClick={() => onApplyPreset(preset)}
-                className={`text-center py-2.5 px-2 rounded-lg border font-mono font-bold text-xs tracking-wide transition-colors uppercase ${
+                onClick={() => handleSelectPreset(preset)}
+                disabled={!canInjectFaults}
+                className={`text-center py-2.5 px-2 rounded-lg border font-mono font-bold text-xs tracking-wide transition-colors uppercase disabled:opacity-40 disabled:cursor-not-allowed ${
                   isNominal
                     ? 'bg-emerald-950/50 border-emerald-600/60 hover:bg-emerald-900/60 text-emerald-300 shadow-sm'
-                    : 'bg-[#182030] border-[#263348] hover:border-blue-500/50 hover:bg-[#1f2a3f] text-slate-200'
+                    : 'bg-[#182030] border-[#263348] hover:border-rose-500/60 hover:bg-rose-950/30 text-slate-200'
                 }`}
               >
                 {preset.title}
@@ -191,6 +264,49 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           })}
         </div>
       </div>
+
+      {/* Simulator Active Alert Banner: automatically disvisible once the fault is corrected */}
+      {activeFaultBanner && hasActiveFault && (
+        <div
+          id="simulator-console-active-warning-banner"
+          className="mb-4 p-3 rounded-lg bg-rose-950/80 border border-rose-500 text-rose-200 flex flex-wrap items-center justify-between gap-2 shadow-lg animate-pulse"
+        >
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-300">
+                  SIMULATOR ALARM ACTIVE:
+                </span>
+                <span className="font-mono text-xs font-bold text-white bg-rose-900/80 px-2 py-0.5 rounded border border-rose-700/60">
+                  {activeFaultBanner}
+                </span>
+              </div>
+              <p className="text-[11px] text-rose-200/90 mt-0.5">
+                Critical telemetry anomaly injected. Automatically disvisible once the fault is resolved.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              id="btn-trigger-view-alert"
+              onClick={() => onFaultTriggered?.(activeFaultBanner)}
+              className="px-3 py-1.5 text-xs font-mono font-bold bg-rose-600 hover:bg-rose-500 text-white rounded-md shadow transition-colors flex items-center gap-1.5 shrink-0"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              SHOW EMERGENCY ALERT
+            </button>
+            <button
+              id="btn-dismiss-simulator-banner"
+              onClick={() => setActiveFaultBanner(null)}
+              className="p-1.5 hover:bg-rose-900/60 text-rose-300 hover:text-white rounded transition-colors"
+              title="Dismiss warning"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
       <div className="mb-4">
         <span className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2 font-semibold">
           Select Component To Manipulate:
@@ -209,7 +325,15 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 onClick={() => onSelectComponent(c.id)}
                 className={`px-3 py-2 rounded-lg text-xs font-mono border transition-colors flex items-center gap-2 ${
                   isSelected
-                    ? 'bg-blue-600 border-blue-500 text-white font-semibold shadow-sm'
+                    ? isHazard
+                      ? 'bg-[#FACC15] border-[#FACC15] text-[#000000] font-bold shadow-[0_0_12px_rgba(250,204,21,0.4)]'
+                      : isIndustrial
+                      ? 'bg-[#E28743] border-[#E28743] text-[#1B1E26] font-bold shadow-[0_0_12px_rgba(226,135,67,0.35)]'
+                      : 'bg-blue-600 border-blue-500 text-white font-semibold shadow-sm'
+                    : isHazard
+                    ? 'bg-[#141418] border-[#2A2A34] text-white hover:bg-[#1E1E26]'
+                    : isIndustrial
+                    ? 'bg-[#1E232B] border-[#384050] text-[#EAD7C3] hover:bg-[#28303C]'
                     : 'bg-[#182030] border-[#263348] text-slate-300 hover:bg-[#202b40]'
                 }`}
               >

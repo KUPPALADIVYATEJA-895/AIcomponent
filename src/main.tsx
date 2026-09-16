@@ -1,10 +1,16 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
+import { ThemeProvider } from './context/ThemeContext';
+import { RbacProvider } from './context/RbacContext';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ThemeProvider>
+      <RbacProvider>
+        <App />
+      </RbacProvider>
+    </ThemeProvider>
   </StrictMode>,
 );
