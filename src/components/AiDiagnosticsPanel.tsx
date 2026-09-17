@@ -6,9 +6,12 @@ import {
   FileText,
   RefreshCw,
   Cpu,
-  ArrowRight,
   ShieldCheck,
   Zap,
+  BookOpen,
+  Layers,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 interface AiDiagnosticsPanelProps {
@@ -26,31 +29,40 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
   onRefreshDiagnosis,
   onOpenReportModal,
   onExecuteFullMitigation,
-  onOpenChatDrawer,
 }) => {
   if (!diagnosis) return null;
 
+  const inv = diagnosis.multivariateInvestigation;
   const isCritical = (diagnosis.gridHealthScore || 100) < 60;
-  const isDegraded = (diagnosis.gridHealthScore || 100) < 85;
+  const isDegraded = (diagnosis.gridHealthScore || 100) < 85 || (inv && inv.anomalyScore > 50);
 
   return (
     <div
       id="ai-diagnostics-solutions-panel"
       className="bg-[#131926] border border-[#232f42] rounded-xl p-5 shadow-md relative overflow-hidden"
     >
-      {/* Top Header */}
+      {/* Panel Top Banner */}
       <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-[#232f42] gap-3">
         <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-950/60 border border-blue-700/50 flex items-center justify-center text-blue-400">
+            <Cpu className="w-5 h-5" />
+          </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-slate-100 tracking-tight">
-                ELECTRICAL DIAGNOSTIC & TELEMETRY ENGINE
+                AURA INVESTIGATION & RAG EVIDENCE GROUNDING
               </h2>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800/60 font-semibold">
+                ISRO PAS-102 GROUNDED
+              </span>
             </div>
+            <p className="text-xs text-slate-400">
+              Multivariate Cross-Channel Correlation Engine & RAG Standard Retrieval
+            </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2">
           <button
             id="btn-reanalyze-telemetry"
@@ -68,22 +80,117 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
             className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-mono font-medium flex items-center gap-1.5 transition-colors shadow-sm"
           >
             <FileText className="w-3.5 h-3.5" />
-            INCIDENT REPORT
-          </button>
-
-          <button
-            id="btn-open-engineer-chat"
-            onClick={onOpenChatDrawer}
-            className="px-3 py-1.5 bg-[#1b2332] hover:bg-[#232e42] border border-[#2c384c] text-slate-200 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors"
-          >
-            <Cpu className="w-3.5 h-3.5 text-blue-400" />
-            FLIGHT ENGINEER ASSISTANT
+            GENERATE REPORT
           </button>
         </div>
       </div>
 
-      {/* Grid Health Metrics Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+      {/* Hero Scenario Investigation Showcase */}
+      {inv && (
+        <div className="mb-5 bg-[#0b101a] border border-[#1e2b3c] rounded-xl p-4">
+          <div className="flex flex-wrap items-center justify-between pb-3 mb-3 border-b border-[#182333] gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+              <h3 className="text-sm font-bold text-slate-200 font-mono tracking-wide">
+                PRIMARY INVESTIGATION: {inv.componentName}
+              </h3>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                Model Consensus: {inv.modelAgreementCount}/{inv.totalModelsTested} Detectors
+              </span>
+              <span className="px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800 font-bold">
+                ANOMALY SCORE: {inv.anomalyScore} / 100
+              </span>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed mb-4">
+            {diagnosis.rootCauseSummary}
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Feature Attribution Breakdown (SHAP Style) */}
+            <div className="bg-[#121927] border border-[#1f2c3d] rounded-lg p-3.5">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1c2738]">
+                <span className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-blue-400" />
+                  FEATURE ATTRIBUTION (CROSS-CHANNEL)
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">BENCHMARK TEST</span>
+              </div>
+              <div className="space-y-2.5">
+                {inv.attributions.map((attr, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between text-xs font-mono">
+                      <span className="text-slate-300">{attr.featureName}</span>
+                      <span className="text-blue-400 font-bold">{attr.contributionPercent}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-amber-500 transition-all duration-500"
+                        style={{ width: `${attr.contributionPercent}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                      <span>Observed: {attr.observedValue}</span>
+                      <span>Nominal: {attr.expectedNominal}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RAG Evidence Corpus Retrieval */}
+            <div className="bg-[#121927] border border-[#1f2c3d] rounded-lg p-3.5">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1c2738]">
+                <span className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+                  RETRIEVED RAG EVIDENCE (ISRO CORPUS)
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 font-semibold">
+                  GROUNDED CITATION
+                </span>
+              </div>
+              <div className="space-y-2">
+                {inv.retrievedEvidence.map((doc, idx) => (
+                  <div key={idx} className="p-2.5 bg-[#0a0f18] border border-[#182333] rounded-md space-y-1">
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                      <span className="text-emerald-400 font-bold">{doc.standardReference}</span>
+                      <span className="text-slate-400 text-[10px]">Relevance: {(doc.relevanceScore * 100).toFixed(0)}%</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 italic leading-snug">
+                      "{doc.excerpt}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Strip Integration */}
+          {onExecuteFullMitigation && (
+            <div className="mt-4 pt-3 border-t border-[#1a2536] flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-mono text-slate-200">
+                  <strong className="text-emerald-400">Recommended Mitigating Action:</strong> {inv.recommendedAction}
+                </span>
+              </div>
+              <button
+                onClick={onExecuteFullMitigation}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-colors shadow-md"
+              >
+                <span>APPROVE LOAD SHED</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Standard Grid Health Status Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Metric 1: Grid Health Score */}
         <div className="bg-[#0f141f] border border-[#1e2838] rounded-lg p-3.5 flex items-center justify-between">
           <div>
@@ -99,7 +206,7 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
                 {diagnosis.gridHealthScore}%
               </span>
               <span className="text-[11px] font-mono text-slate-400">
-                {isCritical ? 'CRITICAL HAZARD' : isDegraded ? 'DEGRADED BUS' : 'STABLE'}
+                {isCritical ? 'CRITICAL HAZARD' : isDegraded ? 'ELEVATED ANOMALY' : 'STABLE'}
               </span>
             </div>
           </div>
@@ -116,7 +223,7 @@ export const AiDiagnosticsPanel: React.FC<AiDiagnosticsPanelProps> = ({
           </div>
         </div>
 
-        {/* Metric 2: Highest Load Machinery */}
+        {/* Metric 2: Primary Current Consumer */}
         <div className="bg-[#0f141f] border border-[#1e2838] rounded-lg p-3.5 flex items-center justify-between">
           <div>
             <span className="text-xs font-mono text-slate-400 block mb-0.5">

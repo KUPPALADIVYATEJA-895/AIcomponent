@@ -23,7 +23,13 @@ export const ThemeSwitcher: React.FC = () => {
     };
   }, [isOpen]);
 
-  const themesList: AppTheme[] = ['industrial-studio', 'mission-control', 'tactical-hazard'];
+  const themesList: AppTheme[] = [
+    'pixel-monochrome-light',
+    'graphite-emerald',
+    'industrial-studio',
+    'tactical-hazard',
+    'monochrome-amber',
+  ];
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -38,7 +44,7 @@ export const ThemeSwitcher: React.FC = () => {
             ? 'bg-[#121215] hover:bg-[#1b1b22] border-[#FACC15]/40 text-[#FACC15]'
             : isIndustrial
             ? 'bg-[#232731] hover:bg-[#2e3442] border-[#3E4654] text-[#E28743]'
-            : 'bg-[#141d2b] hover:bg-[#1d293d] border-[#24334a] text-slate-300 hover:text-white'
+            : 'bg-[#1c222b] hover:bg-[#252d3a] border-[#333d4e] text-emerald-400'
         }`}
       >
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -53,7 +59,7 @@ export const ThemeSwitcher: React.FC = () => {
               ? 'bg-[#0E0E12]/95 border-[#2A2A35] text-white shadow-[0_15px_40px_rgba(0,0,0,0.85)]'
               : isIndustrial
               ? 'bg-[#222730]/95 border-[#3E4654] text-[#EAD7C3] shadow-[0_15px_40px_rgba(0,0,0,0.6)]'
-              : 'bg-[#0e1422]/95 border-[#232f42] text-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.8)]'
+              : 'bg-[#161a1d]/95 border-[#2c353d] text-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.8)]'
           }`}
         >
           {/* Header Title */}
@@ -61,14 +67,14 @@ export const ThemeSwitcher: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <Sparkles
                 className={`w-3.5 h-3.5 ${
-                  isHazard ? 'text-[#FACC15]' : isIndustrial ? 'text-[#E28743]' : 'text-cyan-400'
+                  isHazard ? 'text-[#FACC15]' : isIndustrial ? 'text-[#E28743]' : 'text-emerald-400'
                 }`}
               />
               <span className="text-xs font-mono font-bold tracking-wider uppercase opacity-90">
                 SELECT TELEMETRY THEME
               </span>
             </div>
-            <span className="text-[10px] font-mono opacity-60">3 PALETTES</span>
+            <span className="text-[10px] font-mono opacity-60">4 PALETTES</span>
           </div>
 
           {/* List of Themes */}
@@ -91,12 +97,12 @@ export const ThemeSwitcher: React.FC = () => {
                         ? 'bg-[#18181D] border-[#FACC15] shadow-[0_0_15px_rgba(250,204,21,0.3)]'
                         : isIndustrial
                         ? 'bg-[#2B303A] border-[#E28743] shadow-[0_0_15px_rgba(226,135,67,0.25)]'
-                        : 'bg-[#151f30] border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.25)]'
+                        : 'bg-[#1e252b] border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
                       : isHazard
                       ? 'bg-[#101014]/80 border-[#222228] hover:bg-[#181820] hover:border-[#383844]'
                       : isIndustrial
                       ? 'bg-[#1C2028]/80 border-[#323846] hover:bg-[#2B303A]/70 hover:border-[#475060]'
-                      : 'bg-[#0a0f1a]/80 border-[#1a2333] hover:bg-[#141d2d] hover:border-[#223147]'
+                      : 'bg-[#121619]/80 border-[#242b32] hover:bg-[#1a2024] hover:border-[#323c46]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -144,12 +150,16 @@ export const ThemeSwitcher: React.FC = () => {
 
                   {/* Aesthetic description preview */}
                   <div className="text-[10px] pl-7 opacity-60 leading-relaxed font-sans">
-                    {themeKey === 'tactical-hazard' ? (
-                      <span>Pitch black (#0A0A0B), high-voltage safety yellow (#FACC15) & crisp white (#FFFFFF). High-contrast tactical caution and aerospace emergency warning spec.</span>
+                    {themeKey === 'pixel-monochrome-light' ? (
+                      <span>Stark paper white (#FAFAFA), jet black (#000000) & fine pixel dither grid. Ultra-crisp high contrast telemetry layout.</span>
                     ) : themeKey === 'industrial-studio' ? (
-                      <span>Matte slate (#2B303A), warm birch sand (#EAD7C3) & structural muted orange (#E28743). Tactile audio engineering gear & physical synthesizer console.</span>
+                      <span>Matte slate (#2B303A), warm birch sand (#EAD7C3) & structural burnt copper (#E28743). ISRO hardware screening & satellite bench.</span>
+                    ) : themeKey === 'graphite-emerald' ? (
+                      <span>Dark charcoal steel (#161A1D), operational emerald (#10B981) & crisp silver (#E5E7EB). High-precision telemetry ground station.</span>
+                    ) : themeKey === 'tactical-hazard' ? (
+                      <span>Pitch black (#0A0A0B), safety yellow (#FACC15) & titanium white (#FFFFFF). Tactical high-voltage alert rack.</span>
                     ) : (
-                      <span>Obsidian (#070B12), deep space navy & electric cyan (#06B6D4). High-contrast deep space mission ops.</span>
+                      <span>Dark gunmetal (#1A1C23), warm amber (#F59E0B) & parchment (#F3F4F6). High-legibility aerospace flight log.</span>
                     )}
                   </div>
                 </button>

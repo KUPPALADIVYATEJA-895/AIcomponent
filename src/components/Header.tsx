@@ -213,15 +213,6 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              id="btn-header-chat"
-              onClick={onOpenChatDrawer}
-              className="px-3 py-2 bg-[#141d2b] hover:bg-[#1d293d] border border-[#24334a] text-slate-200 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors"
-              title="Open Flight Diagnostics BOT"
-            >
-              <span>BOT</span>
-            </button>
-
-            <button
               id="btn-header-reset"
               onClick={onResetAll}
               className="p-2 bg-[#141d2b] hover:bg-[#1d293d] border border-[#24334a] text-slate-300 hover:text-white rounded-xl transition-colors"

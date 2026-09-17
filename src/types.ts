@@ -1,4 +1,4 @@
-export type AppTheme = 'industrial-studio' | 'mission-control' | 'tactical-hazard';
+export type AppTheme = 'industrial-studio' | 'graphite-emerald' | 'tactical-hazard' | 'monochrome-amber' | 'pixel-monochrome-light';
 
 export type ComponentCategory =
   | 'POWER'
@@ -74,6 +74,36 @@ export interface DiagnosticIssue {
   resolved?: boolean;
 }
 
+export interface AnomalyAttribution {
+  featureName: string;
+  contributionPercent: number; // e.g. 54%
+  observedValue: string;
+  expectedNominal: string;
+}
+
+export interface RagEvidenceDocument {
+  documentId: string;
+  title: string;
+  standardReference: string; // e.g. "ISRO PAS-102 Section 4.3"
+  excerpt: string;
+  relevanceScore: number; // 0 to 1.0
+}
+
+export interface MultivariateInvestigation {
+  componentId: string;
+  componentName: string;
+  anomalyScore: number; // 0 to 100
+  status: 'NOMINAL' | 'ELEVATED_ANOMALY' | 'CRITICAL_ANOMALY';
+  modelAgreementCount: number; // e.g. 3 of 3 models
+  totalModelsTested: number;
+  detectedModels: string[]; // ['Isolation Forest', 'One-Class SVM', 'Autoencoder']
+  leadTimeGainMinutes: number; // Lead time gain vs traditional threshold
+  attributions: AnomalyAttribution[];
+  retrievedEvidence: RagEvidenceDocument[];
+  recommendedAction: string;
+  isSimulatedEstimate: boolean;
+}
+
 export interface AiDiagnosisResult {
   gridHealthScore: number;
   rootCauseSummary: string;
@@ -86,6 +116,7 @@ export interface AiDiagnosisResult {
   issues: DiagnosticIssue[];
   shortCircuitAnalysis: string;
   actionPlan: string[];
+  multivariateInvestigation?: MultivariateInvestigation;
   source?: string;
   timestamp: string;
 }

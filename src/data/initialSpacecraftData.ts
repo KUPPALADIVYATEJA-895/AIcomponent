@@ -2,6 +2,35 @@ import { SpacecraftComponent, CableConnection, FaultPreset } from '../types';
 
 export const INITIAL_COMPONENTS: SpacecraftComponent[] = [
   {
+    id: 'C-1042',
+    name: 'SSPA C-1042 (Solid State Power Amplifier)',
+    category: 'COMM',
+    voltage: 28.0,
+    nominalCurrent: 1.20,
+    currentDraw: 1.20,
+    maxCurrent: 2.50,
+    temperature: 65.0,
+    tempNominal: 65.0,
+    tempThreshold: 85.0,
+    tempMax: 105.0,
+    cableId: 'CB-1042',
+    cableConnected: true,
+    cableResistance: 1.5,
+    leakageCurrent: 0.8,
+    shortCircuitRisk: 12,
+    status: 'NOMINAL',
+    isCritical: true,
+    gridX: 180,
+    gridY: 300,
+    description: 'Component Burn-In Unit C-1042: High-reliability SSPA undergoing accelerated thermal stress screening for spacecraft payload.',
+    specDetails: {
+      operatingPowerKw: 0.034,
+      insulationRatingKv: 1.5,
+      coolantChannel: 'Thermal Baseplate-1',
+      subsystemBus: 'Burn-In Chamber Alpha',
+    },
+  },
+  {
     id: 'PWR-01',
     name: 'Chamber A',
     category: 'POWER',
@@ -403,6 +432,27 @@ export function evaluateComponent(c: SpacecraftComponent): SpacecraftComponent {
 
 // Preset injection scenarios for the admin console
 export const FAULT_PRESETS: FaultPreset[] = [
+  {
+    id: 'sspa-multivariate-degradation',
+    title: 'C-1042 MULTIVARIATE FAULT',
+    category: 'HERO SCENARIO',
+    summary: 'Subtle Thermal-Current Creep on SSPA C-1042 (Below Traditional Threshold)',
+    severity: 'WARNING',
+    apply: (components) =>
+      components.map((c) => {
+        if (c.id === 'C-1042') {
+          return {
+            ...c,
+            temperature: 78.4, // Still below hard limit 85.0°C!
+            currentDraw: 1.25, // Micro rise from 1.20A
+            leakageCurrent: 8.5,
+            shortCircuitRisk: 84, // AURA flagged anomaly score
+            status: 'WARNING',
+          };
+        }
+        return c;
+      }),
+  },
   {
     id: 'cryo-disconnect',
     title: 'DISCONNECT CABLE',

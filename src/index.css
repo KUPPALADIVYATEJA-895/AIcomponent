@@ -34,22 +34,22 @@
   --electric-wire: #E28743;
 }
 
-[data-theme="mission-control"] {
-  --bg-app: #070B12;
-  --bg-card: #131926;
-  --bg-card-header: #0F141F;
-  --bg-card-subtle: #0A0E17;
-  --border-card: #232F42;
-  --border-card-subtle: #1A2332;
+[data-theme="graphite-emerald"] {
+  --bg-app: #161A1D;
+  --bg-card: #1D2226;
+  --bg-card-header: #191E21;
+  --bg-card-subtle: #13171A;
+  --border-card: #2C353D;
+  --border-card-subtle: #242B32;
   --text-heading: #FFFFFF;
-  --text-primary: #E2E8F0;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --accent-orange: #3B82F6;
-  --accent-orange-hover: #2563EB;
-  --accent-sand: #38BDF8;
-  --accent-sand-subtle: rgba(56, 189, 248, 0.12);
-  --electric-wire: #38BDF8;
+  --text-primary: #E5E7EB;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --accent-orange: #10B981;
+  --accent-orange-hover: #059669;
+  --accent-sand: #E5E7EB;
+  --accent-sand-subtle: rgba(16, 185, 129, 0.12);
+  --electric-wire: #10B981;
 }
 
 [data-theme="tactical-hazard"] {
@@ -70,6 +70,42 @@
   --electric-wire: #FACC15;
 }
 
+[data-theme="pixel-monochrome-light"] {
+  --bg-app: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --bg-card-header: #F4F4F5;
+  --bg-card-subtle: #F4F4F5;
+  --border-card: #18181B;
+  --border-card-subtle: #27272A;
+  --text-heading: #000000;
+  --text-primary: #09090B;
+  --text-secondary: #27272A;
+  --text-muted: #52525B;
+  --accent-orange: #000000;
+  --accent-orange-hover: #18181B;
+  --accent-sand: #000000;
+  --accent-sand-subtle: rgba(0, 0, 0, 0.08);
+  --electric-wire: #000000;
+}
+
+[data-theme="monochrome-amber"] {
+  --bg-app: #1A1C23;
+  --bg-card: #22252E;
+  --bg-card-header: #1E2028;
+  --bg-card-subtle: #16181F;
+  --border-card: #333846;
+  --border-card-subtle: #282C38;
+  --text-heading: #FFFFFF;
+  --text-primary: #F3F4F6;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --accent-orange: #F59E0B;
+  --accent-orange-hover: #D97706;
+  --accent-sand: #F3F4F6;
+  --accent-sand-subtle: rgba(245, 158, 11, 0.12);
+  --electric-wire: #F59E0B;
+}
+
 /* ==========================================================================
    TELEMETRY BACKGROUND GRIDS
    ========================================================================== */
@@ -85,15 +121,26 @@
   background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
 }
 
-/* Mission Control: Deep Obsidian Space with electric blue grid */
-[data-theme="mission-control"] .telemetry-bg-grid {
-  background-color: #070B12;
+/* Graphite Emerald: Dark Charcoal Steel with Emerald grid */
+[data-theme="graphite-emerald"] .telemetry-bg-grid {
+  background-color: #161A1D;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(229, 231, 235, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(16, 185, 129, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.035) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+}
+
+/* Pixel Monochrome Light: Stark Paper White with crisp black pixel dither grid */
+[data-theme="pixel-monochrome-light"] .telemetry-bg-grid {
+  background-color: #FAFAFA;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 0, 0, 0.04) 0%, transparent 60%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+    radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 100% 100%, 16px 16px, 16px 16px, 8px 8px;
 }
 
 /* Tactical Hazard: Pitch Black with high-voltage safety yellow hazard grid & ambient light */
@@ -104,6 +151,17 @@
     radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
     linear-gradient(rgba(250, 204, 21, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(250, 204, 21, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+}
+
+/* Monochrome Amber: Dark Gunmetal with Amber grid */
+[data-theme="monochrome-amber"] .telemetry-bg-grid {
+  background-color: #1A1C23;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(243, 244, 246, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(245, 158, 11, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.035) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
 }
 
@@ -333,6 +391,268 @@
   background-color: #1A190A !important;
   border-color: #FACC15 !important;
   color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   GRAPHITE EMERALD THEME REFINEMENT RULES
+   Matte Charcoal Steel (#161A1D), Operational Emerald (#10B981), Crisp Silver (#E5E7EB)
+   ========================================================================== */
+
+[data-theme="graphite-emerald"] .app-main-container {
+  background-color: #161A1D !important;
+  color: #E5E7EB !important;
+}
+
+[data-theme="graphite-emerald"] .bg-\[\#131926\] {
+  background-color: #1D2226 !important;
+  border-color: #2C353D !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(16, 185, 129, 0.08) !important;
+}
+
+[data-theme="graphite-emerald"] .border-\[\#232f42\],
+[data-theme="graphite-emerald"] .border-\[\#212e42\] {
+  border-color: #2C353D !important;
+}
+
+[data-theme="graphite-emerald"] .bg-\[\#0f141f\],
+[data-theme="graphite-emerald"] .bg-\[\#0b101b\],
+[data-theme="graphite-emerald"] .bg-\[\#121a28\],
+[data-theme="graphite-emerald"] .bg-\[\#141d2b\],
+[data-theme="graphite-emerald"] .bg-\[\#182030\],
+[data-theme="graphite-emerald"] .bg-\[\#161d2b\] {
+  background-color: #13171A !important;
+  border-color: #242B32 !important;
+}
+
+[data-theme="graphite-emerald"] .bg-\[\#1b2332\] {
+  background-color: #21282F !important;
+  border-color: #2C353D !important;
+}
+
+[data-theme="graphite-emerald"] .bg-blue-600 {
+  background-color: #10B981 !important;
+  color: #062319 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="graphite-emerald"] .hover\:bg-blue-500:hover {
+  background-color: #059669 !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="graphite-emerald"] .from-blue-600.to-cyan-600 {
+  --tw-gradient-from: #10B981 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: #6EE7B7 var(--tw-gradient-to-position) !important;
+  color: #062319 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="graphite-emerald"] .text-blue-400,
+[data-theme="graphite-emerald"] .text-cyan-400 {
+  color: #10B981 !important;
+}
+
+[data-theme="graphite-emerald"] .text-blue-300,
+[data-theme="graphite-emerald"] .text-cyan-300 {
+  color: #6EE7B7 !important;
+}
+
+[data-theme="graphite-emerald"] .bg-blue-600\/15 {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+  color: #10B981 !important;
+}
+
+[data-theme="graphite-emerald"] .border-blue-500\/30,
+[data-theme="graphite-emerald"] .border-blue-500\/40,
+[data-theme="graphite-emerald"] .border-blue-500 {
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+[data-theme="graphite-emerald"] input[type="range"] {
+  accent-color: #10B981 !important;
+}
+
+/* ==========================================================================
+   MONOCHROME AMBER THEME REFINEMENT RULES
+   Dark Gunmetal (#1A1C23), Warm Amber (#F59E0B), Parchment (#F3F4F6)
+   ========================================================================== */
+
+[data-theme="monochrome-amber"] .app-main-container {
+  background-color: #1A1C23 !important;
+  color: #F3F4F6 !important;
+}
+
+[data-theme="monochrome-amber"] .bg-\[\#131926\] {
+  background-color: #22252E !important;
+  border-color: #333846 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(245, 158, 11, 0.08) !important;
+}
+
+[data-theme="monochrome-amber"] .border-\[\#232f42\],
+[data-theme="monochrome-amber"] .border-\[\#212e42\] {
+  border-color: #333846 !important;
+}
+
+[data-theme="monochrome-amber"] .bg-\[\#0f141f\],
+[data-theme="monochrome-amber"] .bg-\[\#0b101b\],
+[data-theme="monochrome-amber"] .bg-\[\#121a28\],
+[data-theme="monochrome-amber"] .bg-\[\#141d2b\],
+[data-theme="monochrome-amber"] .bg-\[\#182030\],
+[data-theme="monochrome-amber"] .bg-\[\#161d2b\] {
+  background-color: #16181F !important;
+  border-color: #282C38 !important;
+}
+
+[data-theme="monochrome-amber"] .bg-\[\#1b2332\] {
+  background-color: #272B35 !important;
+  border-color: #333846 !important;
+}
+
+[data-theme="monochrome-amber"] .bg-blue-600 {
+  background-color: #F59E0B !important;
+  color: #1A1002 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="monochrome-amber"] .hover\:bg-blue-500:hover {
+  background-color: #D97706 !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="monochrome-amber"] .from-blue-600.to-cyan-600 {
+  --tw-gradient-from: #F59E0B var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: #FCD34D var(--tw-gradient-to-position) !important;
+  color: #1A1002 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="monochrome-amber"] .text-blue-400,
+[data-theme="monochrome-amber"] .text-cyan-400 {
+  color: #F59E0B !important;
+}
+
+[data-theme="monochrome-amber"] .text-blue-300,
+[data-theme="monochrome-amber"] .text-cyan-300 {
+  color: #FCD34D !important;
+}
+
+[data-theme="monochrome-amber"] .bg-blue-600\/15 {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+  color: #F59E0B !important;
+}
+
+[data-theme="monochrome-amber"] .border-blue-500\/30,
+[data-theme="monochrome-amber"] .border-blue-500\/40,
+[data-theme="monochrome-amber"] .border-blue-500 {
+  border-color: rgba(245, 158, 11, 0.45) !important;
+}
+
+[data-theme="monochrome-amber"] input[type="range"] {
+  accent-color: #F59E0B !important;
+}
+
+/* ==========================================================================
+   PIXEL MONOCHROME LIGHT THEME REFINEMENT RULES
+   Crisp Black & White Light (#FAFAFA, #000000) with Pixel Dither Texture
+   ========================================================================== */
+
+[data-theme="pixel-monochrome-light"] .app-main-container {
+  background-color: #FAFAFA !important;
+  color: #09090B !important;
+}
+
+[data-theme="pixel-monochrome-light"] .bg-\[\#131926\] {
+  background-color: #FFFFFF !important;
+  border-color: #000000 !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+}
+
+[data-theme="pixel-monochrome-light"] .border-\[\#232f42\],
+[data-theme="pixel-monochrome-light"] .border-\[\#212e42\] {
+  border-color: #18181B !important;
+}
+
+[data-theme="pixel-monochrome-light"] .bg-\[\#0f141f\],
+[data-theme="pixel-monochrome-light"] .bg-\[\#0b101b\],
+[data-theme="pixel-monochrome-light"] .bg-\[\#121a28\],
+[data-theme="pixel-monochrome-light"] .bg-\[\#141d2b\],
+[data-theme="pixel-monochrome-light"] .bg-\[\#182030\],
+[data-theme="pixel-monochrome-light"] .bg-\[\#161d2b\] {
+  background-color: #F4F4F5 !important;
+  border-color: #27272A !important;
+  color: #09090B !important;
+}
+
+[data-theme="pixel-monochrome-light"] .bg-\[\#1b2332\] {
+  background-color: #E4E4E7 !important;
+  border-color: #18181B !important;
+  color: #000000 !important;
+}
+
+[data-theme="pixel-monochrome-light"] .bg-blue-600 {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="pixel-monochrome-light"] .hover\:bg-blue-500:hover {
+  background-color: #27272A !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="pixel-monochrome-light"] .from-blue-600.to-cyan-600 {
+  --tw-gradient-from: #000000 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: #27272A var(--tw-gradient-to-position) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="pixel-monochrome-light"] .text-blue-400,
+[data-theme="pixel-monochrome-light"] .text-cyan-400 {
+  color: #000000 !important;
+}
+
+[data-theme="pixel-monochrome-light"] .text-blue-300,
+[data-theme="pixel-monochrome-light"] .text-cyan-300 {
+  color: #27272A !important;
+}
+
+[data-theme="pixel-monochrome-light"] .text-slate-200,
+[data-theme="pixel-monochrome-light"] .text-slate-300,
+[data-theme="pixel-monochrome-light"] .text-slate-400 {
+  color: #27272A !important;
+}
+
+[data-theme="pixel-monochrome-light"] .text-slate-500 {
+  color: #52525B !important;
+}
+
+[data-theme="pixel-monochrome-light"] .bg-blue-600\/15 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+  color: #000000 !important;
+}
+
+[data-theme="pixel-monochrome-light"] .border-blue-500\/30,
+[data-theme="pixel-monochrome-light"] .border-blue-500\/40,
+[data-theme="pixel-monochrome-light"] .border-blue-500 {
+  border-color: #000000 !important;
+}
+
+[data-theme="pixel-monochrome-light"] input[type="range"] {
+  accent-color: #000000 !important;
+}
+
+/* Custom Scrollbars for Pixel Light */
+[data-theme="pixel-monochrome-light"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+[data-theme="pixel-monochrome-light"] ::-webkit-scrollbar-track {
+  background: #F4F4F5;
+}
+[data-theme="pixel-monochrome-light"] ::-webkit-scrollbar-thumb {
+  background: #000000;
+  border-radius: 0px;
 }
 
 /* Tactile Range Sliders for Hazard */
